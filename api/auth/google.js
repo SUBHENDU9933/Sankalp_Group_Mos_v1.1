@@ -1,122 +1,84 @@
-import supabase from '../_supabase.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  if (req.method === 'OPTIONS') return res.status(204).end();
 
-  const { code, state } = req.query;
+  const redirectUri = 'https://vrsossdmdmbmnhmufuts.supabase.co/auth/v1/callback';
 
-  if (req.method === 'GET' && code) {
-    try {
-      const platform = state || 'google';
-      const mockToken = `ya29.${Math.random().toString(36).substring(2, 15)}`;
-      
-      let accountName = 'Sankalp Interior Solution';
-      let accountId = 'gbp_12345';
-      
-      if (platform === 'youtube') {
-        accountName = 'Sankalp Interior';
-        accountId = 'UC_abc123';
-      }
+  try {
+    if (req.method === 'GET' && !req.query.code) {
+      const authUrl =
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        new URLSearchParams({
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          redirect_uri: redirectUri,
+          response_type: 'code',
+          access_type: 'offline',
+          prompt: 'consent',
+          scope:
+            'openid email profile https://www.googleapis.com/auth/business.manage https://www.googleapis.com/auth/youtube.readonly',
+        });
 
-      const { data: existing } = await supabase
-        .from('integrations')
-        .select('*')
-        .eq('platform', platform)
-        .single();
-
-      if (existing) {
-        await supabase
-          .from('integrations')
-          .update({
-            is_connected: true,
-            access_token: mockToken,
-            account_id: accountId,
-            account_name: accountName,
-          })
-          .eq('id', existing.id);
-      }
-
-      res.setHeader('Content-Type', 'text/html');
-      const platformName = platform === 'google' ? 'Google Business Profile' : 'YouTube';
-      const emoji = platform === 'google' ? '🏢' : '📺';
-      
-      return res.status(200).send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Connected!</title>
-          <style>
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-              display: flex; 
-              align-items: center; 
-              justify-content: center; 
-              height: 100vh; 
-              margin: 0;
-              background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);
-              color: white;
-            }
-            .card {
-              background: white;
-              color: #1a1a1a;
-              padding: 40px;
-              border-radius: 20px;
-              text-align: center;
-              box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-              max-width: 320px;
-            }
-            .check {
-              width: 60px;
-              height: 60px;
-              background: #10b981;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin: 0 auto 20px;
-              font-size: 30px;
-              color: white;
-            }
-            h1 { margin: 0 0 10px; font-size: 22px; }
-            p { margin: 0; opacity: 0.7; font-size: 14px; }
-            .emoji { font-size: 40px; margin-bottom: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="card">
-            <div class="emoji">${emoji}</div>
-            <div class="check">✓</div>
-            <h1>Connected!</h1>
-            <p>${platformName} linked</p>
-          </div>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage({ 
-                type: 'oauth-success', 
-                platform: '${platform}',
-                account: '${accountName}'
-              }, '*');
-            }
-            setTimeout(() => window.close(), 1500);
-          </script>
-        </body>
-        </html>
-      `);
-    } catch (err) {
-      console.error('Google OAuth error:', err);
-      return res.status(500).send(`<script>window.close();</script>`);
+      return res.redirect(authUrl);
     }
-  }
 
-  if (req.method === 'GET') {
-    const redirectUri = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/api/auth/google`;
-    const platform = req.query.platform || 'google';
-    return res.redirect(302, `${redirectUri}?code=demo_google_123&state=${platform}`);
-  }
+    if (req.method === 'GET' && req.query.code) {
+      const tokenResponse = await fetch(
+        'https://oauth2.googleapis.com/token',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            code: req.query.code,
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET,
+            redirect_uri: redirectUri,
+            grant_type: 'authorization_code',
+          }),
+        }
+      );
 
-  res.status(405).json({ error: 'Method not allowed' });
+      const tokens = await tokenResponse.json();
+
+      if (!tokens.access_token) {
+        return res.status(400).json(tokens);
+      }
+
+      const profileRes = await fetch(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+
+      const profile = await profileRes.json();
+
+      await supabase.from('integrations').upsert({
+        platform: 'google',
+        is_connected: true,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        account_id: profile.id,
+        account_name: profile.name,
+      });
+
+      return res.redirect(
+        'https://sankalp-marketing-hub-v1.vercel.app/integrations'
+      );
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message });
+  }
 }
