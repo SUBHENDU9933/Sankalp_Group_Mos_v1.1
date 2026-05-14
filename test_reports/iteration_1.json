@@ -1,0 +1,55 @@
+{
+  "summary": "Iteration 1 — full backend + frontend smoke test of Sankalp Marketing Hub. Backend 17/17 pytest cases pass: /api/health, /api/dashboard (graceful no-schema), 6 list endpoints returning [] when tables missing, POST /api/posts (4xx accepted), AI /api/ai/generate caption + review_reply both return non-empty Claude Sonnet 4.5 output, Google OAuth start redirects to accounts.google.com, Facebook mock redirect to ?code=demo_code_123, disconnect, publish. Frontend: login with admin@sankalp.local works; dashboard renders 4 KPI cards + chart area + upcoming + quick actions + sidebar; all 11 sidebar nav items clickable; Composer overlay (overlay/form/preview/text-en/ai-caption) renders fully; AI caption button generated a 730-char Claude response in EN; Cmd/Ctrl+K opens AI Command overlay, prompt returns a 1638-char structured plan; Integrations page renders 8 platform cards with Connect buttons; Reviews and Blogs views render empty-state correctly. No console errors, no broken images, no React render crashes.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "AI Command modal -> Escape -> click nav-integrations",
+        "issue": "Intermittently observed once: after submitting an AI Command prompt, pressing Escape to close the overlay, then clicking nav-integrations, the sidebar highlighted Integrations but the Dashboard content remained and integration cards (testid integration-card-*) did not render (0 found). Not reproducible on a clean re-run (Ctrl+K -> Escape -> nav-integrations rendered all 8 cards). Likely a transient state from a streaming AI response not being aborted on Escape. Worth verifying that AICommand cancels in-flight fetch on close and that route switching forces a re-render of the main view.",
+        "affected_selectors": ["[data-testid='ai-command-overlay']", "[data-testid='nav-integrations']", "[data-testid^='integration-card-']"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Login (work email input)",
+        "issues": [
+          "The email field placeholder shows 'you@sankalpinterior.com' but the visible text appears slightly clipped/overlapping with the leading icon at viewport 1920x1080. Cosmetic only."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional) In AICommand.tsx: abort in-flight fetch on overlay close (AbortController) so a Ctrl+K -> Enter -> Escape sequence cleanly resets and does not block subsequent route changes.",
+    "(Optional) In App.tsx route renderer: ensure the active view is keyed by viewId so React unmounts/remounts on nav-* switches and prevents any stale main-content from persisting.",
+    "User-side: run /app/supabase_schema.sql in Supabase SQL editor to enable CRUD persistence (already surfaced via friendly dashboard banner)."
+  ],
+  "critical_code_review_comments": [
+    "server.py uses os.environ['SUPABASE_URL'] without graceful fallback — correct per spec (fail fast on missing env). Good.",
+    "sb_select() correctly swallows PGRST205 / 'does not exist' / 'schema cache' errors and returns []. Good defensive layer.",
+    "CORS allow_origins=['*'] with allow_credentials=False is fine because no cookies are used. Acceptable.",
+    "AI endpoint uses emergentintegrations Claude Sonnet 4.5 correctly and returns {text, task, platform, language}. Latency observed ~6-12s per call — acceptable.",
+    "Google OAuth redirect_uri derived from x-forwarded-host header — correct for Kubernetes ingress.",
+    "make_crud factory exposes POST without auth — for V1 internal tool this is fine; document that the backend assumes the frontend Supabase Auth has already gated access."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_backend.py (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17)",
+    "frontend": "~95% (all critical flows pass; one intermittent integrations-after-AICommand state observed once, not reproducible on retry)"
+  },
+  "test_credentials": "admin@sankalp.local / Sankalp@2026 (Supabase Auth) — verified working",
+  "seed_data_creation": "None. Supabase tables are intentionally absent per user instruction; all list endpoints return [] gracefully.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Pytest file at /app/backend/tests/test_backend.py covers all critical backend paths and runs in ~17s. Frontend flows verified: Login -> Dashboard -> Sidebar nav (11 items) -> Compose overlay -> AI caption -> Ctrl+K AI Command -> Integrations cards (8) -> Reviews/Blogs empty-state. AI calls take 6-15s; allow long timeouts. The user has NOT run supabase_schema.sql yet, so anything that requires actual rows (posts/blogs/reviews lists with data, publish on a real id) is expected to be empty/4xx — this is by design.",
+  "rca of the issue": "Single intermittent UI quirk: after AI Command modal Escape, one route switch to Integrations failed to re-render main content. Hypothesis: AICommand's streaming/awaiting fetch is not aborted on close, leaving a microtask that briefly blocks the React reconciliation when the route changes. Mitigation: wrap the fetch in an AbortController stored on the overlay's state and call abort() in the onClose/Escape handler; additionally key the main view container in App.tsx by current viewId so any stale tree is unmounted."
+}

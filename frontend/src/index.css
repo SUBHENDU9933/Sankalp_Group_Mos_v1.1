@@ -1,1 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Sankalp Marketing Hub — premium architectural design system        */
+/* ------------------------------------------------------------------ */
+
+@theme {
+  --color-brand-orange: #F47B20;
+  --color-brand-orange-soft: #FFB07A;
+  --color-brand-orange-deep: #C95E0E;
+  --color-brand-blue: #1F4FA1;
+  --color-brand-blue-deep: #0F2E66;
+  --color-ink-950: #060A12;
+  --color-ink-900: #0A0F1A;
+  --color-ink-800: #131B2B;
+  --color-ink-700: #1A2436;
+  --color-ink-600: #243149;
+  --color-ink-500: #334866;
+  --color-ink-400: #5A7099;
+  --color-ink-300: #94A3B8;
+  --color-ink-200: #CBD5E1;
+  --color-ink-100: #E2E8F0;
+  --color-ink-50: #F8FAFC;
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'Manrope', system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0A0F1A;
+  --surface: #131B2B;
+  --surface-2: #1A2436;
+  --border: #1E2A42;
+  --text: #F8FAFC;
+  --text-muted: #94A3B8;
+  --primary: #F47B20;
+  --secondary: #1F4FA1;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-2: #F1F5F9;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --text-muted: #64748B;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); letter-spacing: -0.01em; }
+
+::selection { background: rgba(244,123,32,0.35); color: #fff; }
+
+/* Custom scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.18); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(244,123,32,0.45); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Premium component patterns */
+.card-elev {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.card-elev:hover {
+  transform: translateY(-2px);
+  border-color: rgba(244,123,32,0.45);
+  box-shadow: 0 18px 40px -20px rgba(244,123,32,0.25);
+}
+
+.glass {
+  background: rgba(19,27,43,0.72);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+:root[data-theme="light"] .glass {
+  background: rgba(255,255,255,0.78);
+  border-color: rgba(15,23,42,0.06);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #F58B36 0%, #E0691A 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 12px 28px -14px rgba(244,123,32,0.65), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn-primary:hover { filter: brightness(1.05); box-shadow: 0 16px 34px -16px rgba(244,123,32,0.8), inset 0 1px 0 rgba(255,255,255,0.25); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+
+.btn-ghost {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  transition: border-color .15s ease, background .15s ease;
+}
+.btn-ghost:hover { border-color: rgba(244,123,32,0.55); background: rgba(244,123,32,0.06); }
+
+.tag-chip {
+  background: rgba(244,123,32,0.12);
+  border: 1px solid rgba(244,123,32,0.28);
+  color: #F4A56F;
+  font-weight: 500;
+}
+
+.input-base {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  font-family: var(--font-sans);
+}
+.input-base:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(244,123,32,0.16); }
+
+/* Animated gradient text for premium accent */
+.grad-text {
+  background: linear-gradient(135deg, #F47B20 0%, #FFB07A 50%, #1F4FA1 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Grain texture overlay */
+.grain::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: .035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Stagger fade-in for lists */
+@keyframes riseIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+.rise-in { animation: riseIn .35s ease both; }
+.rise-in-1 { animation-delay: .05s; }
+.rise-in-2 { animation-delay: .1s; }
+.rise-in-3 { animation-delay: .15s; }
+.rise-in-4 { animation-delay: .2s; }
+.rise-in-5 { animation-delay: .25s; }
+.rise-in-6 { animation-delay: .3s; }
+
+/* Vertical brand bar (sidebar active state) */
+.active-bar { position: relative; }
+.active-bar::before {
+  content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px;
+  background: linear-gradient(180deg, #F47B20, #C95E0E);
+  border-radius: 2px;
+}
+
+/* Loading skeleton shimmer */
+@keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface) 50%, var(--surface-2) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 0.75rem;
+}
