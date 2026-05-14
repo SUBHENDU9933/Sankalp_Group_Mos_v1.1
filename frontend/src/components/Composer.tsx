@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Calendar as CalIcon, Send, Globe2, Languages, Image as ImageIcon, Hash } from 'lucide-react';
+import { X, Sparkles, Calendar as CalIcon, Send, Globe2, Languages, Image as ImageIcon, Hash, Upload, Trash2, Loader2 } from 'lucide-react';
 import { PUBLISHABLE_PLATFORMS, platformDef } from '../lib/platforms';
 import { api } from '../lib/api';
 import { pushToast } from '../lib/toast';
+import { uploadToSupabase } from '../lib/upload';
 
 interface Props {
   open: boolean;
@@ -38,6 +39,29 @@ export default function Composer({ open, onClose, onSaved, editingPost }: Props)
   const [previewPlatform, setPreviewPlatform] = useState<string>(platforms[0] || 'facebook');
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
+  const [mediaUrls, setMediaUrls] = useState<string[]>(editingPost?.media_urls || []);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const handleUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const urls: string[] = [];
+      for (const f of Array.from(files)) {
+        const r = await uploadToSupabase(f);
+        urls.push(r.url);
+      }
+      setMediaUrls(prev => [...prev, ...urls]);
+      pushToast({ title: `${urls.length} file${urls.length > 1 ? 's' : ''} uploaded`, tone: 'success' });
+    } catch (e: any) {
+      pushToast({ title: 'Upload failed', description: e.message + ' — make sure a public "media" bucket exists in Supabase Storage.', tone: 'error' });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+  const removeMedia = (i: number) => setMediaUrls(prev => prev.filter((_, idx) => idx !== i));
 
   const togglePlatform = (id: string) => {
     setPlatforms(prev => {
@@ -85,12 +109,17 @@ export default function Composer({ open, onClose, onSaved, editingPost }: Props)
       status: asDraft ? 'draft' : (scheduleAt ? 'scheduled' : 'published'),
       scheduled_at: scheduleAt ? new Date(scheduleAt).toISOString() : null,
       post_type: postType,
-      media_urls: editingPost?.media_urls || [],
+      media_urls: mediaUrls,
     };
     setBusy(true);
     try {
       if (editingPost?.id) await api.posts.update({ id: editingPost.id, ...payload });
-      else await api.posts.create(payload);
+      else {
+        const created = await api.posts.create(payload);
+        if (!asDraft && !scheduleAt && created?.id) {
+          try { await api.posts.publish(created.id); } catch { /* best-effort */ }
+        }
+      }
       pushToast({ title: asDraft ? 'Draft saved' : (scheduleAt ? 'Post scheduled' : 'Post published'), tone: 'success' });
       onSaved();
       onClose();
@@ -206,6 +235,35 @@ export default function Composer({ open, onClose, onSaved, editingPost }: Props)
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Media attach */}
+              <div className="card-elev p-4 mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs text-ink-300 flex items-center gap-1.5"><ImageIcon className="size-3.5" /> Media ({mediaUrls.length})</div>
+                  <button onClick={() => fileRef.current?.click()} disabled={uploading} data-testid="composer-upload-btn"
+                    className="text-xs px-2.5 py-1.5 rounded-md bg-brand-orange/15 text-brand-orange hover:bg-brand-orange/25 flex items-center gap-1.5 disabled:opacity-50">
+                    {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />} Upload
+                  </button>
+                  <input ref={fileRef} type="file" multiple accept="image/*,video/*" className="hidden"
+                    onChange={(e) => handleUpload(e.target.files)} />
+                </div>
+                {mediaUrls.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-2">
+                    {mediaUrls.map((u, i) => (
+                      <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/8 group" data-testid={`composer-media-${i}`}>
+                        {u.match(/\.(mp4|mov|webm)$/i)
+                          ? <video src={u} className="w-full h-full object-cover" />
+                          : <img src={u} alt="" className="w-full h-full object-cover" />}
+                        <button onClick={() => removeMedia(i)} className="absolute top-1 right-1 size-6 rounded-md bg-black/70 text-white opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                          <Trash2 className="size-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-ink-500">Tip: upload images or short videos. They'll be attached to all selected platforms (Instagram requires at least one image).</div>
+                )}
               </div>
 
               {/* Schedule */}

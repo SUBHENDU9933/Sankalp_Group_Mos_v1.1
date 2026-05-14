@@ -51,6 +51,16 @@ export default function App() {
   const [aiOpen, setAIOpen] = useState(false);
   const [stats, setStats] = useState<any>({ pendingReviews: 0, scheduledPosts: 0 });
   const [refreshKey, setRefreshKey] = useState(0);
+  const [theme, setTheme] = useState<'dark' | 'light'>(() =>
+    (typeof window !== 'undefined' && (localStorage.getItem('sankalp-theme') as any)) || 'dark'
+  );
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('sankalp-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
   // Auth bootstrap (Supabase)
   useEffect(() => {
@@ -124,6 +134,8 @@ export default function App() {
           title={meta.title}
           subtitle={meta.subtitle}
           onCompose={() => setComposerOpen(true)}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
         <div className="rise-in" key={view + refreshKey}>
           {view === 'dashboard' && <Dashboard onCompose={() => setComposerOpen(true)} onView={(v) => setView(v as ViewId)} />}

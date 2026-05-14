@@ -46,7 +46,42 @@
   --border: #E2E8F0;
   --text: #0F172A;
   --text-muted: #64748B;
+  /* Flip the ink scale so all bg-ink-* / text-ink-* utilities auto-switch */
+  --color-ink-950: #FFFFFF;
+  --color-ink-900: #F8FAFC;
+  --color-ink-800: #FFFFFF;
+  --color-ink-700: #F1F5F9;
+  --color-ink-600: #E2E8F0;
+  --color-ink-500: #94A3B8;
+  --color-ink-400: #64748B;
+  --color-ink-300: #475569;
+  --color-ink-200: #334155;
+  --color-ink-100: #1E293B;
+  --color-ink-50:  #0F172A;
 }
+
+/* Light-theme overrides for explicit white/black overlays used in components */
+:root[data-theme="light"] body { background: #F8FAFC; color: #0F172A; }
+:root[data-theme="light"] aside.bg-\[\#05080F\] { background: #FFFFFF !important; border-color: #E2E8F0 !important; }
+:root[data-theme="light"] .bg-\[\#080C16\] { background: #F1F5F9 !important; }
+:root[data-theme="light"] .bg-ink-900\/85 { background: rgba(255,255,255,0.85) !important; }
+:root[data-theme="light"] .bg-white\/3,
+:root[data-theme="light"] .bg-white\/5,
+:root[data-theme="light"] .bg-white\/6,
+:root[data-theme="light"] .bg-white\/8,
+:root[data-theme="light"] .bg-white\/10 { background: rgba(15,23,42,0.04) !important; }
+:root[data-theme="light"] .border-white\/5,
+:root[data-theme="light"] .border-white\/8,
+:root[data-theme="light"] .border-white\/10,
+:root[data-theme="light"] .border-white\/12,
+:root[data-theme="light"] .border-white\/20,
+:root[data-theme="light"] .border-white\/25 { border-color: rgba(15,23,42,0.10) !important; }
+:root[data-theme="light"] .glass { background: rgba(255,255,255,0.85); border-color: rgba(15,23,42,0.08); }
+:root[data-theme="light"] .card-elev { background: #FFFFFF; border-color: #E2E8F0; }
+:root[data-theme="light"] .card-elev:hover { box-shadow: 0 12px 30px -16px rgba(244,123,32,0.30); }
+:root[data-theme="light"] .input-base { background: #FFFFFF; border-color: #E2E8F0; color: #0F172A; }
+:root[data-theme="light"] .input-base::placeholder { color: #94A3B8; }
+:root[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.18); }
 
 html, body, #root {
   height: 100%;

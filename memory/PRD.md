@@ -25,24 +25,23 @@ Build a self-owned, premium digital marketing operating system (hybrid Buffer.co
 - Multi-platform: Facebook, Instagram, Threads, X, Google Business, YouTube + GSC + GA.
 - Multi-language: English, Bengali, Hindi.
 
-## What's been implemented (2026-05-14)
+## What's been implemented (updated 2026-05-14)
 - ✅ Premium split-screen Login (email/password + Google OAuth) — Supabase-backed
 - ✅ Sidebar with grouped nav, brand mark, badges (scheduled/pending), Cmd+K AI button
-- ✅ Topbar with global search, notifications, Compose button
+- ✅ Topbar with global search, notifications, Compose button, **🌗 dark/light theme toggle (persists in localStorage)**
 - ✅ Dashboard: 4 KPI cards, 7-day reach AreaChart (Recharts), upcoming-posts rail, recent-reviews card, quick-actions grid
-- ✅ Content Studio Composer (slide-over, split-screen): post-type selector, multi-platform multi-select, EN/BN/HI editors, AI caption + hashtag generators per language, live platform-morphing preview (FB / IG / X / Threads / Google Business / YouTube)
-- ✅ Content Calendar (month grid with platform-colored post chips, week/month toggle)
+- ✅ Content Studio Composer: post-type selector, multi-platform multi-select, EN/BN/HI editors, AI caption + hashtag generators per language, live platform-morphing preview, **direct media upload to Supabase Storage (images + videos)**
+- ✅ Content Calendar (month grid with platform-colored post chips)
 - ✅ Blogs Manager (list, AI blog generation, edit, publish, delete)
 - ✅ Reviews (sentiment-filtered, AI reply suggestion + post reply)
-- ✅ Campaigns (create festive / promotional / offer / lead-gen, status)
+- ✅ Campaigns (create festive/promotional/offer/lead-gen)
 - ✅ Analytics (stacked bar chart by platform)
-- ✅ Integrations (8 brand-color platform cards, real Google OAuth, mocked Facebook/Instagram)
-- ✅ Media Library, SEO Center placeholder, Inbox placeholder, Settings
-- ✅ Global Cmd/Ctrl+K AI Command Assistant (overlay with suggestions, abort on close)
-- ✅ Toast system, skeleton loaders, empty states
-- ✅ Backend FastAPI shim with: health, dashboard, CRUD on 6 tables, analytics, AI, Google + Facebook OAuth, publish, disconnect
-- ✅ Supabase schema migration SQL (with demo seed data)
-- ✅ data-testid coverage on all interactive elements
+- ✅ Integrations (8 brand-color platform cards, real Google OAuth with platform-specific scopes for Business/YouTube/GSC/GA, mocked Facebook/Instagram)
+- ✅ Global Cmd/Ctrl+K AI Command Assistant
+- ✅ **Vercel serverless functions** for production: `/api/ai/generate` (Anthropic / OpenAI direct), `/api/publish` (real Graph API for FB+IG, GBP for Google), `/api/auth/google` (dynamic host + per-platform scopes), `/api/auth/facebook` (mock), `/api/auth/disconnect`, full CRUD on posts/blogs/reviews/campaigns/integrations/media/analytics/dashboard
+- ✅ Backend FastAPI shim at `/app/backend` for the Emergent preview environment
+- ✅ Real publishing engine — calls FB Graph API when real token present, falls back to "mock" status when not
+- ✅ Supabase schema migration SQL + DEPLOYMENT.md guide
 - ✅ Tested: 100% backend (17/17), ~95% frontend (testing agent iteration 1)
 
 ## Prioritized backlog

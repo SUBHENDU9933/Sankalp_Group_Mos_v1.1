@@ -30,7 +30,7 @@ export const api = {
     create: (data: any) => request('/api/posts', { method: 'POST', body: JSON.stringify(data) }),
     update: (data: any) => request('/api/posts', { method: 'PUT', body: JSON.stringify(data) }),
     remove: (id: number) => request('/api/posts', { method: 'DELETE', body: JSON.stringify({ id }) }),
-    publish: (id: number) => request('/api/publish', { method: 'POST', body: JSON.stringify({ id }) }),
+    publish: (id: number | string) => request('/api/publish', { method: 'POST', body: JSON.stringify({ id }) }),
   },
   blogs: {
     list: (status?: string) => request(`/api/blogs${status ? `?status=${status}` : ''}`),
