@@ -1,0 +1,112 @@
+{
+  "theme_archetype": {
+    "name": "Archetype 5: Jewel & Luxury (Adapted for High-End SaaS)",
+    "description": "A premium, architectural, and crafted dashboard feel. Blends the deep trust and depth of Royal Blue with the vibrant, action-oriented warmth of Sankalp Orange. No generic SaaS purple/indigo 'AI slop'. Focuses on crisp geometry, glassmorphism for overlays, and structured density.",
+    "default_mode": "dark"
+  },
+  "typography": {
+    "fonts": {
+      "headings": {
+        "family": "'Outfit', sans-serif",
+        "description": "Distinctive, geometric, architectural. Brings a premium, structural feel.",
+        "google_font_url": "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      },
+      "body": {
+        "family": "'Manrope', sans-serif",
+        "description": "Clean, highly legible for dense dashboards, pairs perfectly with Outfit.",
+        "google_font_url": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
+      }
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl tracking-tight font-semibold",
+      "h2": "text-2xl sm:text-3xl tracking-tight font-semibold",
+      "h3": "text-xl sm:text-2xl tracking-tight font-medium",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm text-muted-foreground",
+      "overline": "text-xs tracking-[0.2em] uppercase font-bold text-primary/80"
+    }
+  },
+  "colors": {
+    "brand": {
+      "orange": "#F47B20",
+      "royal_blue": "#1F4FA1"
+    },
+    "dark": {
+      "background": "#0A0F1A",
+      "surface": "#131B2B",
+      "surface_hover": "#1A2436",
+      "border": "#1E2A42",
+      "primary": "#F47B20",
+      "primary_hover": "#E06915",
+      "secondary": "#1F4FA1",
+      "text_main": "#F8F9FA",
+      "text_muted": "#94A3B8",
+      "ring": "#F47B20"
+    },
+    "light": {
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "surface_hover": "#F1F5F9",
+      "border": "#E2E8F0",
+      "primary": "#F47B20",
+      "primary_hover": "#D66718",
+      "secondary": "#1F4FA1",
+      "text_main": "#0F172A",
+      "text_muted": "#64748B",
+      "ring": "#F47B20"
+    },
+    "status": {
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444",
+      "ai_accent": "#00B4D8"
+    },
+    "forbidden_colors": ["#9D4CDD", "#7351B7", "purple", "violet", "indigo"]
+  },
+  "spacing_and_layout": {
+    "grid_system": "The 'Control Room' Grid - grid-cols-1 md:grid-cols-3 lg:grid-cols-4 with gap-6 for tight data correlation.",
+    "container_padding": "Generous spacing. p-6 or p-8 inside cards. No text collision with borders.",
+    "card_radius": "rounded-xl to rounded-2xl. Not too pill-like, maintaining structural architectural geometry.",
+    "borders": "1px subtle borders (border-border) to define structure, dropping heavy drop-shadows."
+  },
+  "components": {
+    "sidebar": "Royal Blue tinted very dark (#050B14) in dark mode. Active states marked with a vertical Sankalp Orange bar on the left edge. Include badges for unread/scheduled counts.",
+    "kpi_cards": "Flat background with 1px border. Hover effect: slight lift (-translate-y-1) + border color transitions to primary/30 + subtle primary-tinted glow.",
+    "content_studio_composer": "Split-screen layout. Left: Editor form + AI assist button (Orange). Right: Live preview morphing based on selected platform (FB, IG, X).",
+    "visual_calendar": "Grid structure. Days with posts have colored chips matching platform brand colors (e.g., Meta blue, IG gradient).",
+    "integration_cards": "Use 'Tracing Beam' or subtle neon-glow active state around connected platforms. Display platform brand logos via lucide-react or react-icons.",
+    "review_cards": "Sentiment analysis badges (Success green for positive, Warning amber for neutral, Error red for negative). Star ratings in Orange. AI reply suggestion drawer slides out.",
+    "ai_command_assistant": "Global Cmd+K slide-over panel. Glassmorphism overlay (backdrop-blur-xl bg-black/60). Remove any purple slop; use sophisticated Blue/Orange subtle grain.",
+    "login_split_screen": "Left: High-end architectural interior design image covering full height with a dark gradient overlay. Right: Clean, centered login form with Google OAuth and Email."
+  },
+  "motion": {
+    "hover_states": "transition-all duration-200 ease-in-out",
+    "page_transitions": "Fade in and slight slide-up (translate-y-4 to 0, opacity 0 to 1) for main content areas.",
+    "micro_interactions": "Scale buttons to 0.98 on active (click). Smooth disclosure for accordions/drawers."
+  },
+  "media_assets": {
+    "logo_url": "https://customer-assets.emergentagent.com/job_a2ed2df1-87d3-4ab9-817b-f487b74f494b/artifacts/7ewjwywe_logo.jpg",
+    "login_hero_image": "https://static.prod-images.emergentagent.com/jobs/a2ed2df1-87d3-4ab9-817b-f487b74f494b/images/35f8fdc44bb2f151e4f923956a922b410a1410fbcf1e99ebb74938f7490ae078.png",
+    "dashboard_abstract_bg": "https://static.prod-images.emergentagent.com/jobs/a2ed2df1-87d3-4ab9-817b-f487b74f494b/images/ce312d78b23d500d08a65592c128b0468dc89878c0507639a97f8f8f5026ac01.png",
+    "interior_design_placeholder_1": "https://images.unsplash.com/photo-1646987916641-1f3c8992daa2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBpbnRlcmlvciUyMGRlc2lnbiUyMG1vZGVybnxlbnwwfHx8fDE3Nzg3OTM1NzJ8MA&ixlib=rb-4.1.0&q=85",
+    "interior_design_placeholder_2": "https://images.unsplash.com/photo-1672927936377-97d1be3976cd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwzfHxsdXh1cnklMjBpbnRlcmlvciUyMGRlc2lnbiUyMG1vZGVybnxlbnwwfHx8fDE3Nzg3OTM1NzJ8MA&ixlib=rb-4.1.0&q=85"
+  },
+  "testing": {
+    "data_testid_rule": "ALL interactive and key informational elements MUST include a data-testid attribute (e.g., data-testid='login-submit-button'). Use kebab-case, role-based."
+  },
+  "critical_rules": {
+    "1": "DO NOT use any purple, violet, or indigo colors. Purge existing 'AI slop' gradients.",
+    "2": "DO NOT use Inter, Roboto, or Arial for headings. Use Outfit.",
+    "3": "Apply 'data-testid' to all buttons, links, inputs, and major layout sections.",
+    "4": "Ensure proper contrast for all text, especially on the #F47B20 orange accents."
+  },
+  "instructions_to_main_agent": [
+    "Install Google Fonts 'Outfit' and 'Manrope' in your base index.html/CSS.",
+    "Configure tailwind.config.js to extend colors with 'brand-orange': '#F47B20' and 'brand-blue': '#1F4FA1'. Set up dark/light mode variations.",
+    "Build the UI in .js (React) not .tsx.",
+    "Use Lucide React (already installed) or react-icons for platform logos (Facebook, X, IG, etc.).",
+    "Replace any generic purple AI gradients with a sophisticated 'blue and orange' textured look.",
+    "Implement the login screen using the 'login_hero_image' from media_assets in the left pane.",
+    "Build the dashboard using the 'Control Room' grid layout described in spacing_and_layout."
+  ]
+}
