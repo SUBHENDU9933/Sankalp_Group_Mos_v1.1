@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     'https://sankalp-marketing-hub-v1.vercel.app/api/auth/google';
 
   try {
-    // Start OAuth
+    // Start OAuth flow
     if (req.method === 'GET' && !req.query.code) {
       const authUrl =
         'https://accounts.google.com/o/oauth2/v2/auth?' +
@@ -54,6 +54,7 @@ export default async function handler(req, res) {
         return res.status(400).json(tokens);
       }
 
+      // Get user profile
       const profileRes = await fetch(
         'https://www.googleapis.com/oauth2/v2/userinfo',
         {
@@ -65,25 +66,46 @@ export default async function handler(req, res) {
 
       const profile = await profileRes.json();
 
-      const { error } = await supabase
+      // Check existing integration
+      const existing = await supabase
         .from('integrations')
-        .upsert(
-          {
+        .select('id')
+        .eq('platform', 'google')
+        .maybeSingle();
+
+      let error = null;
+
+      if (existing.data) {
+        const updateResult = await supabase
+          .from('integrations')
+          .update({
+            is_connected: true,
+            access_token: tokens.access_token,
+            account_id: profile.id,
+            account_name: profile.name,
+          })
+          .eq('id', existing.data.id);
+
+        error = updateResult.error;
+      } else {
+        const insertResult = await supabase
+          .from('integrations')
+          .insert({
             platform: 'google',
             is_connected: true,
             access_token: tokens.access_token,
             account_id: profile.id,
-            account_name: profile.name
-          },
-          {
-            onConflict: 'platform',
-          }
-        );
+            account_name: profile.name,
+          });
+
+        error = insertResult.error;
+      }
 
       if (error) {
         return res.status(500).json({ error: error.message });
       }
 
+      // Notify parent window
       return res.send(`
         <!DOCTYPE html>
         <html>
@@ -93,11 +115,12 @@ export default async function handler(req, res) {
               window.opener.postMessage({
                 type: 'oauth-success',
                 platform: 'google',
-                account: '${profile.name}'
+                account: ${JSON.stringify(profile.name)}
               }, '*');
             }
             window.close();
           </script>
+          <p>Google connected successfully.</p>
         </body>
         </html>
       `);
