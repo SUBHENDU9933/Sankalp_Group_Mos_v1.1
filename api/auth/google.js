@@ -73,8 +73,7 @@ export default async function handler(req, res) {
             is_connected: true,
             access_token: tokens.access_token,
             account_id: profile.id,
-            account_name: profile.name,
-            updated_at: new Date().toISOString(),
+            account_name: profile.name
           },
           {
             onConflict: 'platform',
