@@ -8,12 +8,13 @@ const supabase = createClient(
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  const redirectUri = 'https://vrsossdmdmbmnhmufuts.supabase.co/auth/v1/callback';
+  const redirectUri =
+    'https://sankalp-marketing-hub-v1.vercel.app/api/auth/google';
 
   try {
     if (req.method === 'GET' && !req.query.code) {
       const authUrl =
-        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        'https://accounts.google.com/o/oauth2/v2/auth?' +
         new URLSearchParams({
           client_id: process.env.GOOGLE_CLIENT_ID,
           redirect_uri: redirectUri,
@@ -66,7 +67,7 @@ export default async function handler(req, res) {
         platform: 'google',
         is_connected: true,
         access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
+        refresh_token: tokens.refresh_token || null,
         account_id: profile.id,
         account_name: profile.name,
       });
@@ -78,7 +79,7 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error(err);
+    console.error('Google OAuth error:', err);
     return res.status(500).json({ error: err.message });
   }
 }
