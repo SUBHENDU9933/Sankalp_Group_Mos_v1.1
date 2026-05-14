@@ -12,6 +12,7 @@ export default async function handler(req, res) {
     'https://sankalp-marketing-hub-v1.vercel.app/api/auth/google';
 
   try {
+    // STEP 1: Start OAuth login
     if (req.method === 'GET' && !req.query.code) {
       const authUrl =
         'https://accounts.google.com/o/oauth2/v2/auth?' +
@@ -28,6 +29,7 @@ export default async function handler(req, res) {
       return res.redirect(authUrl);
     }
 
+    // STEP 2: OAuth callback
     if (req.method === 'GET' && req.query.code) {
       const tokenResponse = await fetch(
         'https://oauth2.googleapis.com/token',
@@ -52,6 +54,7 @@ export default async function handler(req, res) {
         return res.status(400).json(tokens);
       }
 
+      // Fetch Google profile
       const profileRes = await fetch(
         'https://www.googleapis.com/oauth2/v2/userinfo',
         {
@@ -63,18 +66,51 @@ export default async function handler(req, res) {
 
       const profile = await profileRes.json();
 
-      await supabase.from('integrations').upsert({
-        platform: 'google',
-        is_connected: true,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token || null,
-        account_id: profile.id,
-        account_name: profile.name,
-      });
+      // Save integration
+      const { error } = await supabase
+        .from('integrations')
+        .upsert(
+          {
+            platform: 'google',
+            is_connected: true,
+            access_token: tokens.access_token,
+            refresh_token: tokens.refresh_token || null,
+            account_id: profile.id,
+            account_name: profile.name,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'platform',
+          }
+        );
 
-      return res.redirect(
-        'https://sankalp-marketing-hub-v1.vercel.app/'
-      );
+      if (error) {
+        console.error('Supabase save error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      // Notify parent window + close popup
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Connected</title>
+        </head>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'oauth-success',
+                platform: 'google',
+                account: '${profile.name}'
+              }, '*');
+            }
+            window.close();
+          </script>
+          <p>Google connected successfully. You can close this window.</p>
+        </body>
+        </html>
+      `);
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
