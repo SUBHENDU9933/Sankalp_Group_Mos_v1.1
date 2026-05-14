@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Send, X, Loader2 } from 'lucide-react';
 import { api } from '../lib/api';
@@ -20,6 +20,15 @@ export default function AICommand({ open, onClose }: Props) {
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<{ q: string; a: string }[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!open && abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+      setBusy(false);
+    }
+  }, [open]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -37,12 +46,16 @@ export default function AICommand({ open, onClose }: Props) {
     const prompt = (text ?? q).trim();
     if (!prompt) return;
     setBusy(true);
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
     try {
       const res = await api.ai.generate({ task: 'command', prompt });
       setHistory(h => [...h, { q: prompt, a: (res?.text || '').toString() }]);
       setQ('');
     } catch (e: any) {
-      setHistory(h => [...h, { q: prompt, a: `Error: ${e.message}` }]);
+      if (e?.name !== 'AbortError') {
+        setHistory(h => [...h, { q: prompt, a: `Error: ${e.message}` }]);
+      }
     } finally { setBusy(false); }
   };
 
