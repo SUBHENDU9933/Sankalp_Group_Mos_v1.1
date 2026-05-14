@@ -73,7 +73,7 @@ export default async function handler(req, res) {
       });
 
       return res.redirect(
-        'https://sankalp-marketing-hub-v1.vercel.app/integrations'
+        'https://sankalp-marketing-hub-v1.vercel.app/'
       );
     }
 
