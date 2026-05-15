@@ -2,6 +2,48 @@
 
 All notable changes to **Sankalp Marketing Hub** are documented here.
 
+## [1.2.0] — 2026-02-15
+
+### 🚀 Production Publishing Engine
+- **Real multi-platform publishing** in `/api/publish` for all 6 publishing channels:
+  - **Facebook Pages** — text / photo / video posts via Graph API v19 (auto-detects media type)
+  - **Instagram Business** — image / video / reel via 2-step container + publish with `status_code` polling
+  - **Google Business Profile** — `localPosts` with offer/standard topic + auto-retry on 401 with refresh-token
+  - **YouTube** — resumable video upload (server-side fetch + binary PUT to upload URL)
+  - **X (Twitter)** — OAuth 2.0 + PKCE tweet publishing (text + `media_ids` support)
+  - **Threads** — Meta Threads Graph API 2-step (text / image / video) with timed waits
+- **Parallel platform dispatch** — each platform publishes independently; per-platform errors captured into `posts.metadata.publish_results`
+- **Smart status logic** — `published` / `partial` / `failed` / `pending_connection` derived from per-platform results
+- **Status guard `publishing`** prevents the cron from double-firing in-flight posts
+
+### 🔐 Real OAuth flows
+- **Meta OAuth** (`/api/auth/facebook`) — short-lived → long-lived user token → page token; auto-detects linked IG Business account and saves BOTH `facebook` and `instagram` rows.
+- **Threads OAuth** (`/api/auth/threads`) — new endpoint, long-lived (60d) token, profile fetched and stored.
+- **X OAuth 2.0 + PKCE** (`/api/auth/x`) — new endpoint, confidential client, refresh-token saved.
+- **Google OAuth enrichment** — callback now auto-fetches YouTube channel (channel_id, title, subscribers) or GBP account+location (account_id, location_id, all_locations) and persists to `integrations.metadata`. Preserves refresh_token across re-consents.
+
+### 🔒 Cron security
+- `/api/cron/publish` now requires `X-Cron-Secret` header matching `CRON_SECRET` env var.
+- Cron-job.org setup unchanged — just add the header with your secret.
+
+### 📚 Setup guides
+- `/app/META_SETUP_GUIDE.md` — step-by-step Meta Developer App + Page + IG Business config.
+- `/app/X_SETUP_GUIDE.md` — X Developer Portal OAuth 2.0 setup.
+- `/app/THREADS_SETUP_GUIDE.md` — Threads API Developer App config.
+
+### 🗄️ Schema
+- `/app/supabase_migration_v1_2.sql` — adds `refresh_token` + `metadata` columns to integrations (idempotent), creates partial index on scheduled posts.
+
+### 🎨 Frontend
+- `oauthPopup` extended to route `threads` and `x` to their new endpoints.
+- Integrations page copy updated — all 8 platforms are now real OAuth (no more "simulated until verification" disclaimer).
+
+### 📦 Vercel functions
+9 of 12 (Hobby ceiling) — added 2 new (`threads.js`, `x.js`) on top of existing 7.
+
+---
+
+
 ## [1.1.0] — 2026-05-15
 
 ### 📱 Mobile-app experience

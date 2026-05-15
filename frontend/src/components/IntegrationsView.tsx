@@ -31,7 +31,7 @@ export default function IntegrationsView() {
       <div>
         <div className="text-xs uppercase tracking-[0.2em] text-ink-400">Channels</div>
         <h2 className="font-display text-2xl font-semibold mt-1">Integrations</h2>
-        <p className="text-sm text-ink-300 mt-1 max-w-2xl">Connect Sankalp Marketing Hub to your social, search, and analytics tools. Google connections use real OAuth — Meta and X are simulated until business verification completes.</p>
+        <p className="text-sm text-ink-300 mt-1 max-w-2xl">Connect Sankalp Marketing Hub to your social, search, and analytics tools. All connections use real OAuth — set up the corresponding Developer App credentials in Vercel before connecting (see <code className="text-brand-orange">META_SETUP_GUIDE.md</code>, <code className="text-brand-orange">X_SETUP_GUIDE.md</code>, <code className="text-brand-orange">THREADS_SETUP_GUIDE.md</code>).</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

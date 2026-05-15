@@ -73,9 +73,14 @@ export function oauthPopup(platform: string, onSuccess?: (data: any) => void) {
   const width = 600, height = 700;
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
-  const url = platform === 'facebook' || platform === 'instagram'
-    ? `${BACKEND_URL}/api/auth/facebook`
-    : `${BACKEND_URL}/api/auth/google?platform=${platform}`;
+  const url =
+    platform === 'facebook' || platform === 'instagram'
+      ? `${BACKEND_URL}/api/auth/facebook`
+      : platform === 'threads'
+        ? `${BACKEND_URL}/api/auth/threads`
+        : platform === 'x' || platform === 'twitter'
+          ? `${BACKEND_URL}/api/auth/x`
+          : `${BACKEND_URL}/api/auth/google?platform=${platform}`;
   const popup = window.open(url, `${platform}-oauth`, `width=${width},height=${height},left=${left},top=${top}`);
 
   const handler = (e: MessageEvent) => {
