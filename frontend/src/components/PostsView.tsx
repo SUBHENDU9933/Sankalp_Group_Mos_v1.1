@@ -116,6 +116,7 @@ function PostRow({ post, index, onEdit, onDuplicate, onDelete, onPublishNow }: a
     draft:     { bg: 'bg-ink-600/30 text-ink-200',         label: 'Draft',     Icon: FileText },
     scheduled: { bg: 'bg-brand-blue/20 text-sky-300',      label: 'Scheduled', Icon: Clock },
     published: { bg: 'bg-emerald-500/15 text-emerald-300', label: 'Published', Icon: CheckCircle2 },
+    pending_connection: { bg: 'bg-amber-500/15 text-amber-300', label: 'Connect platform', Icon: AlertCircle },
     failed:    { bg: 'bg-red-500/15 text-red-300',         label: 'Failed',    Icon: AlertCircle },
   };
   const b = badges[status] || badges.draft;

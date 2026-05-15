@@ -76,12 +76,14 @@ export default async function handler(req, res) {
     }
   }
 
-  const anyOk = Object.values(results).some(r => r.ok);
+  const anyRealOk = Object.values(results).some(r => r.ok && r.mode !== 'mock' && r.mode !== 'queued');
+  const allMock   = Object.values(results).length > 0 && Object.values(results).every(r => r.mode === 'mock' || r.mode === 'queued');
+
   await supabase.from('posts').update({
-    status: anyOk ? 'published' : 'failed',
-    published_at: anyOk ? new Date().toISOString() : null,
+    status: anyRealOk ? 'published' : (allMock ? 'pending_connection' : 'failed'),
+    published_at: anyRealOk ? new Date().toISOString() : null,
     metadata: { publish_results: results },
   }).eq('id', id);
 
-  return res.status(200).json({ ok: anyOk, results });
+  return res.status(200).json({ ok: anyRealOk, mock_only: allMock, results });
 }
