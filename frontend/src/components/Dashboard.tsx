@@ -3,13 +3,15 @@ import { Activity, ArrowUpRight, Calendar, CheckCircle2, FileText, Megaphone, Me
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { api } from '../lib/api';
 import { platformDef } from '../lib/platforms';
+import OnboardingChecklist from './OnboardingChecklist';
 
 interface Props {
   onCompose: () => void;
   onView: (v: any) => void;
+  onEditPost: (post: any) => void;
 }
 
-export default function Dashboard({ onCompose, onView }: Props) {
+export default function Dashboard({ onCompose, onView, onEditPost }: Props) {
   const [data, setData] = useState<any>(null);
   const [analytics, setAnalytics] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +42,7 @@ export default function Dashboard({ onCompose, onView }: Props) {
 
   return (
     <div className="px-8 py-6 space-y-8" data-testid="dashboard-view">
+      <OnboardingChecklist onView={onView} />
       {needsSchema && (
         <div className="rise-in card-elev p-5 border-l-4 border-l-brand-orange flex items-start gap-4" data-testid="schema-banner">
           <div className="size-10 rounded-xl bg-brand-orange/15 flex items-center justify-center"><Sparkles className="size-5 text-brand-orange" /></div>
@@ -108,7 +111,7 @@ export default function Dashboard({ onCompose, onView }: Props) {
           {data.upcomingPosts?.length ? (
             <div className="space-y-3 flex-1">
               {data.upcomingPosts.slice(0, 5).map((p: any, i: number) => (
-                <div key={p.id} className={`rise-in rise-in-${i+1} flex items-start gap-3 p-3 rounded-xl bg-white/3 border border-white/5 hover:border-brand-orange/40 transition`}>
+                <button key={p.id} onClick={() => onEditPost(p)} className={`w-full rise-in rise-in-${i+1} flex items-start gap-3 p-3 rounded-xl bg-white/3 border border-white/5 hover:border-brand-orange/40 hover:bg-white/5 transition text-left`}>
                   <div className="size-9 rounded-lg bg-gradient-to-br from-brand-orange to-brand-blue flex items-center justify-center text-xs font-semibold">
                     {new Date(p.scheduled_at).getDate()}
                   </div>
@@ -124,7 +127,7 @@ export default function Dashboard({ onCompose, onView }: Props) {
                       <span className="text-[11px] text-ink-400 ml-1">{new Date(p.scheduled_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           ) : (

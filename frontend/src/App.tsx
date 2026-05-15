@@ -7,6 +7,7 @@ import Sidebar, { type ViewId } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Dashboard from './components/Dashboard';
 import Composer from './components/Composer';
+import PostsView from './components/PostsView';
 import CalendarView from './components/CalendarView';
 import ReviewsView from './components/ReviewsView';
 import IntegrationsView from './components/IntegrationsView';
@@ -17,10 +18,10 @@ import MediaView from './components/MediaView';
 import SEOView from './components/SEOView';
 import InboxView from './components/InboxView';
 import SettingsView from './components/SettingsView';
+import NotificationsView from './components/NotificationsView';
 import AICommand from './components/AICommand';
 import ToastHost from './components/ToastHost';
 
-// Inject Outfit + Manrope link tags
 if (typeof document !== 'undefined' && !document.getElementById('sankalp-fonts')) {
   const link = document.createElement('link');
   link.id = 'sankalp-fonts'; link.rel = 'stylesheet';
@@ -29,18 +30,20 @@ if (typeof document !== 'undefined' && !document.getElementById('sankalp-fonts')
 }
 
 const VIEW_META: Record<ViewId, { title: string; subtitle: string }> = {
-  dashboard:    { title: 'Good to see you back', subtitle: 'A snapshot of your marketing operation.' },
-  composer:     { title: 'Content Studio', subtitle: 'Compose, preview and publish across every channel.' },
-  calendar:     { title: 'Content Calendar', subtitle: 'Plan your week and month at a glance.' },
-  blogs:        { title: 'Blog Manager', subtitle: 'Write SEO-optimised posts with AI assistance.' },
-  media:        { title: 'Media Library', subtitle: 'Logos, banners, photos, videos.' },
-  reviews:      { title: 'Reputation', subtitle: 'Sentiment-tagged reviews with AI reply drafts.' },
-  campaigns:    { title: 'Campaigns', subtitle: 'Festive, promotional and lead-gen pushes.' },
-  seo:          { title: 'SEO Center', subtitle: 'Search Console insights and content opportunities.' },
-  inbox:        { title: 'Inbox & Replies', subtitle: 'Unified messenger inbox with AI automations.' },
-  analytics:    { title: 'Analytics', subtitle: 'Reach, engagement and conversion intelligence.' },
-  integrations: { title: 'Integrations', subtitle: 'Connect your channels in one click.' },
-  settings:     { title: 'Settings', subtitle: 'Workspace, brand, roles & notifications.' },
+  dashboard:     { title: 'Good to see you back',     subtitle: 'A snapshot of your marketing operation.' },
+  composer:      { title: 'Content Studio',            subtitle: 'Compose, preview and publish across every channel.' },
+  posts:         { title: 'Posts Queue',               subtitle: 'Every post — drafts, queued, sent and failed.' },
+  calendar:      { title: 'Content Calendar',          subtitle: 'Plan your week and month at a glance.' },
+  blogs:         { title: 'Blog Manager',              subtitle: 'Write SEO-optimised posts with AI assistance.' },
+  media:         { title: 'Media Library',             subtitle: 'Logos, banners, photos, videos.' },
+  reviews:       { title: 'Reputation',                subtitle: 'Sentiment-tagged reviews with AI reply drafts.' },
+  campaigns:     { title: 'Campaigns',                 subtitle: 'Festive, promotional and lead-gen pushes.' },
+  seo:           { title: 'SEO Center',                subtitle: 'Search Console insights and content opportunities.' },
+  inbox:         { title: 'Inbox & Replies',           subtitle: 'Unified messenger inbox with AI automations.' },
+  analytics:     { title: 'Analytics',                 subtitle: 'Reach, engagement and conversion intelligence.' },
+  integrations:  { title: 'Integrations',              subtitle: 'Connect your channels in one click.' },
+  notifications: { title: 'Activity feed',             subtitle: 'Everything that happened across your channels.' },
+  settings:      { title: 'Settings',                  subtitle: 'Workspace, brand, roles & notifications.' },
 };
 
 export default function App() {
@@ -51,6 +54,8 @@ export default function App() {
   const [aiOpen, setAIOpen] = useState(false);
   const [stats, setStats] = useState<any>({ pendingReviews: 0, scheduledPosts: 0 });
   const [refreshKey, setRefreshKey] = useState(0);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [composerDate, setComposerDate] = useState<string | null>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
     (typeof window !== 'undefined' && (localStorage.getItem('sankalp-theme') as any)) || 'dark'
   );
@@ -62,7 +67,6 @@ export default function App() {
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
-  // Auth bootstrap (Supabase)
   useEffect(() => {
     if (!supabase) { setAuthLoading(false); return; }
     supabase.auth.getSession().then(({ data }) => {
@@ -75,13 +79,11 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Dashboard stats (used for sidebar badges)
   useEffect(() => {
     if (!user) return;
     api.dashboard().then(d => setStats(d.stats || {})).catch(() => {});
   }, [user, refreshKey]);
 
-  // Cmd+K → AI assistant
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -92,6 +94,21 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  const openComposerNew = (defaultDate?: string) => {
+    setEditingPost(null);
+    setComposerDate(defaultDate || null);
+    setComposerOpen(true);
+  };
+  const openComposerEdit = (post: any) => {
+    setEditingPost(post);
+    setComposerDate(null);
+    setComposerOpen(true);
+  };
+  const closeComposer = () => {
+    setComposerOpen(false);
+    setTimeout(() => { setEditingPost(null); setComposerDate(null); }, 250);
+  };
 
   const logout = async () => {
     if (supabase) await supabase.auth.signOut();
@@ -111,9 +128,7 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return (<><Login /><ToastHost /></>);
-  }
+  if (!user) return (<><Login /><ToastHost /></>);
 
   const meta = VIEW_META[view];
 
@@ -133,14 +148,15 @@ export default function App() {
         <Topbar
           title={meta.title}
           subtitle={meta.subtitle}
-          onCompose={() => setComposerOpen(true)}
+          onCompose={() => openComposerNew()}
           theme={theme}
           onToggleTheme={toggleTheme}
         />
         <div className="rise-in" key={view + refreshKey}>
-          {view === 'dashboard' && <Dashboard onCompose={() => setComposerOpen(true)} onView={(v) => setView(v as ViewId)} />}
-          {view === 'composer'  && <ComposerLanding onOpen={() => setComposerOpen(true)} />}
-          {view === 'calendar'  && <CalendarView onCompose={() => setComposerOpen(true)} />}
+          {view === 'dashboard' && <Dashboard onCompose={() => openComposerNew()} onView={(v) => setView(v as ViewId)} onEditPost={openComposerEdit} />}
+          {view === 'composer'  && <ComposerLanding onOpen={() => openComposerNew()} />}
+          {view === 'posts'     && <PostsView onEdit={openComposerEdit} onCompose={() => openComposerNew()} />}
+          {view === 'calendar'  && <CalendarView onCompose={() => openComposerNew()} onEditPost={openComposerEdit} onComposeOnDate={(d) => openComposerNew(d)} />}
           {view === 'blogs'     && <BlogsView />}
           {view === 'media'     && <MediaView />}
           {view === 'reviews'   && <ReviewsView />}
@@ -148,15 +164,19 @@ export default function App() {
           {view === 'seo'       && <SEOView />}
           {view === 'inbox'     && <InboxView />}
           {view === 'analytics' && <AnalyticsView />}
-          {view === 'integrations' && <IntegrationsView />}
+          {view === 'integrations'  && <IntegrationsView />}
+          {view === 'notifications' && <NotificationsView />}
           {view === 'settings'  && <SettingsView />}
         </div>
       </main>
 
       <Composer
+        key={`composer-${editingPost?.id || 'new'}-${composerDate || ''}`}
         open={composerOpen}
-        onClose={() => setComposerOpen(false)}
+        onClose={closeComposer}
         onSaved={() => setRefreshKey(k => k + 1)}
+        editingPost={editingPost}
+        initialScheduledAt={composerDate}
       />
       <AICommand open={aiOpen} onClose={() => setAIOpen(false)} />
       <ToastHost />

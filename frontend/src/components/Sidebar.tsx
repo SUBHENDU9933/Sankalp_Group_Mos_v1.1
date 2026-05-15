@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
-import { LayoutDashboard, PenSquare, Calendar, FileText, Image as ImageIcon, Star, Megaphone, BarChart3, Link2, Settings, MessagesSquare, Search, Sparkles } from 'lucide-react';
+import { LayoutDashboard, PenSquare, Calendar, FileText, Image as ImageIcon, Star, Megaphone, BarChart3, Link2, Settings, MessagesSquare, Search, Sparkles, ListChecks, Bell } from 'lucide-react';
 
 export type ViewId =
-  | 'dashboard' | 'composer' | 'calendar' | 'blogs' | 'media'
-  | 'reviews' | 'campaigns' | 'seo' | 'inbox' | 'analytics' | 'integrations' | 'settings';
+  | 'dashboard' | 'composer' | 'posts' | 'calendar' | 'blogs' | 'media'
+  | 'reviews' | 'campaigns' | 'seo' | 'inbox' | 'analytics' | 'integrations'
+  | 'notifications' | 'settings';
 
 interface Props {
   view: ViewId;
@@ -25,7 +25,8 @@ export default function Sidebar({ view, onChange, pendingReviews = 0, scheduledP
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'composer',  label: 'Content Studio', icon: PenSquare },
-        { id: 'calendar',  label: 'Content Calendar', icon: Calendar, badge: scheduledPosts },
+        { id: 'posts',     label: 'Posts Queue', icon: ListChecks, badge: scheduledPosts },
+        { id: 'calendar',  label: 'Calendar', icon: Calendar },
       ],
     },
     {
@@ -47,9 +48,10 @@ export default function Sidebar({ view, onChange, pendingReviews = 0, scheduledP
     {
       label: 'Intelligence',
       items: [
-        { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-        { id: 'seo',       label: 'SEO Center', icon: Search },
-        { id: 'settings',  label: 'Settings', icon: Settings },
+        { id: 'analytics',     label: 'Analytics', icon: BarChart3 },
+        { id: 'seo',           label: 'SEO Center', icon: Search },
+        { id: 'notifications', label: 'Activity', icon: Bell },
+        { id: 'settings',      label: 'Settings', icon: Settings },
       ],
     },
   ];

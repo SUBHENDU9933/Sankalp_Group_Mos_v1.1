@@ -55,6 +55,11 @@ export const api = {
   media: {
     list: () => request('/api/media_library'),
   },
+  media_library: {
+    list: () => request('/api/media_library'),
+    create: (data: any) => request('/api/media_library', { method: 'POST', body: JSON.stringify(data) }),
+    remove: (id: number) => request('/api/media_library', { method: 'DELETE', body: JSON.stringify({ id }) }),
+  },
   analytics: {
     list: (days = 30, metric_type?: string) => request(`/api/analytics?days=${days}${metric_type ? `&metric_type=${metric_type}` : ''}`),
   },

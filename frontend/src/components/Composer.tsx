@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Calendar as CalIcon, Send, Globe2, Languages, Image as ImageIcon, Hash, Upload, Trash2, Loader2 } from 'lucide-react';
 import { PUBLISHABLE_PLATFORMS, platformDef } from '../lib/platforms';
@@ -11,6 +11,7 @@ interface Props {
   onClose: () => void;
   onSaved: () => void;
   editingPost?: any;
+  initialScheduledAt?: string | null;
 }
 
 const LANGS = [
@@ -27,16 +28,19 @@ const POST_TYPES = [
   { id: 'gbp_post', label: 'Google Business' },
 ];
 
-export default function Composer({ open, onClose, onSaved, editingPost }: Props) {
+export default function Composer({ open, onClose, onSaved, editingPost, initialScheduledAt }: Props) {
   const [content, setContent] = useState<{ en: string; bn: string; hi: string }>(
     () => ({ en: editingPost?.content_en || editingPost?.content || '', bn: editingPost?.content_bn || '', hi: editingPost?.content_hi || '' })
   );
   const [platforms, setPlatforms] = useState<string[]>(editingPost?.platforms || ['facebook', 'instagram']);
   const [langs, setLangs] = useState<string[]>(editingPost?.languages || ['en']);
-  const [scheduleAt, setScheduleAt] = useState<string>(editingPost?.scheduled_at ? editingPost.scheduled_at.slice(0, 16) : '');
+  const [scheduleAt, setScheduleAt] = useState<string>(
+    editingPost?.scheduled_at ? editingPost.scheduled_at.slice(0, 16) : (initialScheduledAt || '')
+  );
   const [postType, setPostType] = useState<string>(editingPost?.post_type || 'social');
   const [previewLang, setPreviewLang] = useState<'en' | 'bn' | 'hi'>('en');
   const [previewPlatform, setPreviewPlatform] = useState<string>(platforms[0] || 'facebook');
+  const [showLibrary, setShowLibrary] = useState(false);
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [mediaUrls, setMediaUrls] = useState<string[]>(editingPost?.media_urls || []);
@@ -241,10 +245,15 @@ export default function Composer({ open, onClose, onSaved, editingPost }: Props)
               <div className="card-elev p-4 mb-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-xs text-ink-300 flex items-center gap-1.5"><ImageIcon className="size-3.5" /> Media ({mediaUrls.length})</div>
-                  <button onClick={() => fileRef.current?.click()} disabled={uploading} data-testid="composer-upload-btn"
-                    className="text-xs px-2.5 py-1.5 rounded-md bg-brand-orange/15 text-brand-orange hover:bg-brand-orange/25 flex items-center gap-1.5 disabled:opacity-50">
-                    {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />} Upload
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={() => setShowLibrary(true)} className="text-xs px-2.5 py-1.5 rounded-md bg-white/8 hover:bg-white/12 flex items-center gap-1.5">
+                      <ImageIcon className="size-3" /> Library
+                    </button>
+                    <button onClick={() => fileRef.current?.click()} disabled={uploading} data-testid="composer-upload-btn"
+                      className="text-xs px-2.5 py-1.5 rounded-md bg-brand-orange/15 text-brand-orange hover:bg-brand-orange/25 flex items-center gap-1.5 disabled:opacity-50">
+                      {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />} Upload
+                    </button>
+                  </div>
                   <input ref={fileRef} type="file" multiple accept="image/*,video/*" className="hidden"
                     onChange={(e) => handleUpload(e.target.files)} />
                 </div>
@@ -310,7 +319,60 @@ export default function Composer({ open, onClose, onSaved, editingPost }: Props)
           </motion.div>
         </motion.div>
       )}
+      {showLibrary && (
+        <LibraryPickerOverlay
+          existing={mediaUrls}
+          onClose={() => setShowLibrary(false)}
+          onSelect={(urls) => { setMediaUrls(prev => [...prev, ...urls.filter(u => !prev.includes(u))]); setShowLibrary(false); }}
+        />
+      )}
     </AnimatePresence>
+  );
+}
+
+function LibraryPickerOverlay({ existing, onClose, onSelect }: { existing: string[]; onClose: () => void; onSelect: (urls: string[]) => void }) {
+  const [items, setItems] = useState<any[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  useEffect(() => { api.media.list().then(setItems).catch(() => {}); }, []);
+  const toggle = (url: string) => setSelected(prev => {
+    const next = new Set(prev); if (next.has(url)) next.delete(url); else next.add(url); return next;
+  });
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-4xl max-h-[85vh] card-elev p-5 flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-lg font-semibold">Pick from Media Library</h3>
+          <button onClick={onClose} className="size-8 rounded-lg hover:bg-white/5 flex items-center justify-center"><X className="size-4" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {items.length === 0 ? (
+            <div className="py-12 text-center text-ink-400 text-sm">No media uploaded yet — close this and use Upload.</div>
+          ) : (
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+              {items.map((m: any) => {
+                const sel = selected.has(m.url);
+                const used = existing.includes(m.url);
+                const isVideo = (m.mime_type || '').startsWith('video');
+                return (
+                  <button key={m.id} disabled={used} onClick={() => toggle(m.url)}
+                    className={`relative aspect-square rounded-lg overflow-hidden border ${sel ? 'border-brand-orange ring-2 ring-brand-orange/50' : 'border-white/8 hover:border-white/20'} ${used ? 'opacity-40' : ''}`}>
+                    {isVideo ? <video src={m.url} className="w-full h-full object-cover" /> : <img src={m.url} alt="" className="w-full h-full object-cover" />}
+                    {used && <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-[10px] uppercase tracking-wider">Already added</div>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-white/8">
+          <button onClick={onClose} className="px-3 py-2 rounded-lg border border-white/10 text-sm">Cancel</button>
+          <button onClick={() => onSelect(Array.from(selected))} disabled={selected.size === 0} className="btn-primary rounded-lg px-3 py-2 text-sm disabled:opacity-50">
+            Add {selected.size > 0 ? `(${selected.size})` : ''}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
