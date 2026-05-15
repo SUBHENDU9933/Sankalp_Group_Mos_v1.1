@@ -38,21 +38,66 @@ export default function CalendarView({ onCompose, onEditPost, onComposeOnDate }:
   };
 
   return (
-    <div className="px-8 py-6" data-testid="calendar-view">
-      <div className="flex items-center justify-between mb-5">
+    <div className="px-4 md:px-8 py-5 md:py-6" data-testid="calendar-view">
+      <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-ink-400">Content Calendar</div>
-          <h2 className="font-display text-2xl font-semibold mt-1">{cursor.toLocaleString(undefined, { month: 'long', year: 'numeric' })}</h2>
+          <h2 className="font-display text-xl md:text-2xl font-semibold mt-1">{cursor.toLocaleString(undefined, { month: 'long', year: 'numeric' })}</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button onClick={() => setCursor(c => new Date(c.getFullYear(), c.getMonth() - 1, 1))} className="size-9 rounded-lg border border-white/10 hover:bg-white/5"><ChevronLeft className="size-4 mx-auto" /></button>
           <button onClick={() => setCursor(new Date())} className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs">Today</button>
           <button onClick={() => setCursor(c => new Date(c.getFullYear(), c.getMonth() + 1, 1))} className="size-9 rounded-lg border border-white/10 hover:bg-white/5"><ChevronRight className="size-4 mx-auto" /></button>
-          <button onClick={onCompose} className="btn-primary rounded-lg px-3 py-1.5 text-xs flex items-center gap-1"><Plus className="size-3" /> New post</button>
+          <button onClick={onCompose} className="btn-primary rounded-lg px-3 py-1.5 text-xs flex items-center gap-1"><Plus className="size-3" /> New</button>
         </div>
       </div>
 
-      <div className="card-elev overflow-hidden">
+      {/* Mobile agenda — list view of upcoming days with posts */}
+      <div className="md:hidden space-y-3" data-testid="calendar-agenda">
+        {days.filter(c => c.date && c.items.length > 0).length === 0 ? (
+          <div className="card-elev p-8 text-center text-ink-300 flex flex-col items-center gap-3">
+            <CalIcon className="size-9 text-ink-500" />
+            <p className="text-sm">No posts scheduled this month.</p>
+            <button onClick={onCompose} className="btn-primary px-3 py-1.5 rounded-lg text-xs">+ Plan a post</button>
+          </div>
+        ) : (
+          days.filter(c => c.date && c.items.length > 0).map(c => (
+            <div key={c.date!.toISOString()} className="card-elev p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="size-10 rounded-lg bg-gradient-to-br from-brand-orange to-brand-blue flex flex-col items-center justify-center leading-none text-white shrink-0">
+                  <span className="text-[10px] uppercase">{c.date!.toLocaleString(undefined, { month: 'short' })}</span>
+                  <span className="text-base font-bold">{c.date!.getDate()}</span>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">{c.date!.toLocaleDateString(undefined, { weekday: 'long' })}</div>
+                  <div className="text-[11px] text-ink-400">{c.items.length} post{c.items.length > 1 ? 's' : ''}</div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {c.items.map(p => (
+                  <button key={p.id} onClick={() => onEditPost(p)} className="w-full text-left p-3 rounded-lg bg-white/3 border border-white/8 hover:border-brand-orange/45 transition flex items-start gap-3">
+                    {p.media_urls?.[0] ? <img src={p.media_urls[0]} className="size-10 rounded-md object-cover shrink-0" alt="" /> : <div className="size-10 rounded-md bg-white/5 shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium line-clamp-2">{p.title || p.content?.slice(0, 70) || 'Untitled'}</div>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        {(p.platforms || []).slice(0, 4).map((pl: string) => {
+                          const def = platformDef(pl); if (!def) return null;
+                          const Icon = def.icon;
+                          return <Icon key={pl} className="size-3.5" style={{ color: def.brand }} />;
+                        })}
+                        <span className="text-[10px] text-ink-500 ml-1">{p.scheduled_at ? new Date(p.scheduled_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop calendar grid */}
+      <div className="hidden md:block card-elev overflow-hidden">
         <div className="grid grid-cols-7 text-center text-[11px] uppercase tracking-wider text-ink-400 border-b border-white/5">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => <div key={d} className="py-2.5">{d}</div>)}
         </div>
@@ -98,7 +143,7 @@ export default function CalendarView({ onCompose, onEditPost, onComposeOnDate }:
       </div>
 
       {posts.length === 0 && (
-        <div className="mt-6 text-center text-sm text-ink-400 flex flex-col items-center gap-3 py-12">
+        <div className="hidden md:flex mt-6 text-center text-sm text-ink-400 flex-col items-center gap-3 py-12">
           <CalIcon className="size-10 text-ink-500" />
           No posts yet — click any empty day above, or use <button onClick={onCompose} className="btn-primary px-3 py-1.5 rounded-lg text-xs">+ New post</button>
         </div>

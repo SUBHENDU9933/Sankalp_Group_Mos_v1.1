@@ -46,6 +46,7 @@ export default function Composer({ open, onClose, onSaved, editingPost, initialS
   const [mediaUrls, setMediaUrls] = useState<string[]>(editingPost?.media_urls || []);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const [mobileTab, setMobileTab] = useState<'form' | 'preview'>('form');
 
   const handleUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -140,16 +141,31 @@ export default function Composer({ open, onClose, onSaved, editingPost, initialS
           <motion.div
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-            className="ml-auto w-full max-w-[1180px] h-full bg-ink-900 border-l border-white/10 flex relative shadow-2xl"
+            className="ml-auto w-full md:max-w-[1180px] h-full bg-ink-900 md:border-l md:border-white/10 flex flex-col md:flex-row relative shadow-2xl"
           >
+            {/* Mobile tabs bar */}
+            <div className="lg:hidden sticky top-0 z-30 bg-ink-900/95 backdrop-blur border-b border-white/8 px-4 py-3 flex items-center gap-2">
+              <button onClick={onClose} className="size-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center" aria-label="Close" data-testid="composer-mobile-close">
+                <X className="size-4" />
+              </button>
+              <div className="flex-1 flex items-center gap-1 rounded-lg bg-white/5 p-1">
+                <button onClick={() => setMobileTab('form')}
+                  className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium ${mobileTab === 'form' ? 'bg-white/12 text-white' : 'text-ink-300'}`}
+                  data-testid="composer-tab-form">Edit</button>
+                <button onClick={() => setMobileTab('preview')}
+                  className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium ${mobileTab === 'preview' ? 'bg-white/12 text-white' : 'text-ink-300'}`}
+                  data-testid="composer-tab-preview">Preview</button>
+              </div>
+            </div>
+
             {/* LEFT — form */}
-            <div className="flex-1 overflow-y-auto p-8" data-testid="composer-form">
+            <div className={`flex-1 overflow-y-auto p-5 md:p-8 ${mobileTab === 'preview' ? 'hidden lg:block' : 'block'}`} data-testid="composer-form">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <div className="text-xs uppercase tracking-[0.2em] text-ink-400">Content Studio</div>
                   <h2 className="font-display text-2xl font-semibold mt-1">{editingPost ? 'Edit post' : 'Compose new post'}</h2>
                 </div>
-                <button onClick={onClose} className="size-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center" data-testid="composer-close-btn">
+                <button onClick={onClose} className="hidden lg:flex size-9 rounded-lg bg-white/5 hover:bg-white/10 items-center justify-center" data-testid="composer-close-btn">
                   <X className="size-4" />
                 </button>
               </div>
@@ -283,19 +299,19 @@ export default function Composer({ open, onClose, onSaved, editingPost, initialS
                 <div className="text-[11px] text-ink-500 mt-2">{scheduleAt ? `Will publish at ${new Date(scheduleAt).toLocaleString()}` : 'Leave empty to publish immediately.'}</div>
               </div>
 
-              <div className="sticky bottom-0 bg-ink-900/90 backdrop-blur -mx-8 px-8 py-4 border-t border-white/8 flex items-center justify-between">
-                <button onClick={() => save(true)} disabled={busy} className="btn-ghost rounded-xl px-4 py-2.5 text-sm" data-testid="composer-save-draft-btn">
+              <div className="sticky bottom-0 bg-ink-900/95 backdrop-blur -mx-5 md:-mx-8 px-5 md:px-8 py-3 md:py-4 border-t border-white/8 flex items-center justify-between pb-[calc(env(safe-area-inset-bottom)+12px)] md:pb-4">
+                <button onClick={() => save(true)} disabled={busy} className="btn-ghost rounded-xl px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm" data-testid="composer-save-draft-btn">
                   Save draft
                 </button>
                 <button onClick={() => save(false)} disabled={busy || platforms.length === 0}
-                  className="btn-primary rounded-xl px-5 py-2.5 text-sm flex items-center gap-2" data-testid="composer-publish-btn">
-                  <Send className="size-4" /> {scheduleAt ? 'Schedule post' : 'Publish now'}
+                  className="btn-primary rounded-xl px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm flex items-center gap-2" data-testid="composer-publish-btn">
+                  <Send className="size-4" /> {scheduleAt ? 'Schedule' : 'Publish now'}
                 </button>
               </div>
             </div>
 
             {/* RIGHT — live preview */}
-            <div className="hidden lg:flex w-[420px] shrink-0 border-l border-white/8 bg-[#080C16] flex-col" data-testid="composer-preview">
+            <div className={`${mobileTab === 'form' ? 'hidden lg:flex' : 'flex'} lg:w-[420px] shrink-0 lg:border-l lg:border-white/8 bg-[#080C16] flex-col flex-1 lg:flex-initial`} data-testid="composer-preview">
               <div className="p-5 border-b border-white/8">
                 <div className="text-[11px] uppercase tracking-[0.2em] text-ink-400 mb-2">Live preview</div>
                 <div className="flex flex-wrap gap-1.5">

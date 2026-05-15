@@ -14,11 +14,13 @@ interface Props {
   onLogout: () => void;
   user?: any;
   onOpenAI: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 const LOGO = 'https://customer-assets.emergentagent.com/job_a2ed2df1-87d3-4ab9-817b-f487b74f494b/artifacts/7ewjwywe_logo.jpg';
 
-export default function Sidebar({ view, onChange, pendingReviews = 0, scheduledPosts = 0, unreadInbox = 0, onLogout, user, onOpenAI }: Props) {
+export default function Sidebar({ view, onChange, pendingReviews = 0, scheduledPosts = 0, unreadInbox = 0, onLogout, user, onOpenAI, mobileOpen, onMobileClose }: Props) {
   const groups: { label: string; items: { id: ViewId; label: string; icon: any; badge?: number }[] }[] = [
     {
       label: 'Workspace',
@@ -57,15 +59,24 @@ export default function Sidebar({ view, onChange, pendingReviews = 0, scheduledP
   ];
 
   return (
-    <aside className="w-[260px] shrink-0 h-screen sticky top-0 flex flex-col bg-[#05080F] border-r border-white/5" data-testid="sidebar">
+    <>
+      {mobileOpen && <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={onMobileClose} />}
+      <aside
+        className={`w-[280px] md:w-[260px] shrink-0 h-screen flex flex-col bg-[#05080F] border-r border-white/5
+          ${mobileOpen ? 'fixed top-0 left-0 z-50 translate-x-0' : 'fixed -translate-x-full'} 
+          md:sticky md:top-0 md:translate-x-0 transition-transform duration-300 ease-out`}
+        data-testid="sidebar">
       <div className="px-5 py-5 flex items-center gap-3">
         <div className="size-10 rounded-xl bg-white/95 p-1 shadow-lg">
           <img src={LOGO} alt="Sankalp Interior" className="w-full h-full object-contain rounded-lg" />
         </div>
-        <div>
+        <div className="flex-1">
           <div className="font-display text-[15px] font-semibold tracking-tight leading-none">Sankalp</div>
           <div className="text-[10px] uppercase tracking-[0.2em] text-ink-400 mt-1">Marketing Hub</div>
         </div>
+        <button onClick={onMobileClose} className="md:hidden size-8 rounded-lg hover:bg-white/5 flex items-center justify-center" aria-label="Close">
+          <span className="text-ink-300 text-xl leading-none">×</span>
+        </button>
       </div>
 
       <button onClick={onOpenAI} data-testid="open-ai-command-btn"
@@ -85,7 +96,7 @@ export default function Sidebar({ view, onChange, pendingReviews = 0, scheduledP
                 return (
                   <button
                     key={it.id}
-                    onClick={() => onChange(it.id)}
+                    onClick={() => { onChange(it.id); onMobileClose?.(); }}
                     data-testid={`nav-${it.id}`}
                     className={`relative w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition group ${
                       active ? 'bg-white/8 text-white active-bar' : 'text-ink-300 hover:text-white hover:bg-white/5'
@@ -119,5 +130,6 @@ export default function Sidebar({ view, onChange, pendingReviews = 0, scheduledP
         </div>
       </div>
     </aside>
+    </>
   );
 }

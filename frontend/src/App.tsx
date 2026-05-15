@@ -5,6 +5,7 @@ import { pushToast } from './lib/toast';
 import Login from './components/Login';
 import Sidebar, { type ViewId } from './components/Sidebar';
 import Topbar from './components/Topbar';
+import BottomNav from './components/BottomNav';
 import Dashboard from './components/Dashboard';
 import Composer from './components/Composer';
 import PostsView from './components/PostsView';
@@ -59,6 +60,7 @@ export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() =>
     (typeof window !== 'undefined' && (localStorage.getItem('sankalp-theme') as any)) || 'dark'
   );
+  const [mobileSidebar, setMobileSidebar] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -143,6 +145,8 @@ export default function App() {
         onLogout={logout}
         user={user}
         onOpenAI={() => setAIOpen(true)}
+        mobileOpen={mobileSidebar}
+        onMobileClose={() => setMobileSidebar(false)}
       />
       <main className="flex-1 min-w-0">
         <Topbar
@@ -151,6 +155,7 @@ export default function App() {
           onCompose={() => openComposerNew()}
           theme={theme}
           onToggleTheme={toggleTheme}
+          onMenuClick={() => setMobileSidebar(true)}
         />
         <div className="rise-in" key={view + refreshKey}>
           {view === 'dashboard' && <Dashboard onCompose={() => openComposerNew()} onView={(v) => setView(v as ViewId)} onEditPost={openComposerEdit} />}
@@ -179,6 +184,13 @@ export default function App() {
         initialScheduledAt={composerDate}
       />
       <AICommand open={aiOpen} onClose={() => setAIOpen(false)} />
+      <BottomNav
+        view={view}
+        onChange={setView}
+        onCompose={() => openComposerNew()}
+        onOpenAI={() => setAIOpen(true)}
+        pendingReviews={stats.pendingReviews || 0}
+      />
       <ToastHost />
     </div>
   );
