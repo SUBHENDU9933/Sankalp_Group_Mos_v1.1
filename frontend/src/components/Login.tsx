@@ -139,6 +139,14 @@ export default function Login() {
               <>Have an account? <button onClick={() => setMode('signin')} className="text-brand-orange hover:underline">Sign in</button></>
             )}
           </div>
+
+          <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center gap-4 text-[11px] text-ink-400">
+            <a href="/privacy" className="hover:text-brand-orange-soft" data-testid="login-privacy-link">Privacy</a>
+            <span className="opacity-30">•</span>
+            <a href="/terms" className="hover:text-brand-orange-soft" data-testid="login-terms-link">Terms</a>
+            <span className="opacity-30">•</span>
+            <a href="/data-deletion" className="hover:text-brand-orange-soft" data-testid="login-data-deletion-link">Data Deletion</a>
+          </div>
         </motion.div>
       </div>
     </div>
