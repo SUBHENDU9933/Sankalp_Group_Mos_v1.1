@@ -134,14 +134,10 @@ export default function Login() {
 
           <div className="text-center text-sm text-ink-400 mt-6">
             {mode === 'signin' ? (
-              <>New here? <button onClick={() => setMode('signup')} className="text-brand-orange hover:underline">Create an account</button></>
+              <>&nbsp;</>
             ) : (
               <>Have an account? <button onClick={() => setMode('signin')} className="text-brand-orange hover:underline">Sign in</button></>
             )}
-          </div>
-
-          <div className="mt-10 text-[11px] text-ink-500 text-center">
-            By continuing you agree to Sankalp Marketing Hub's internal usage terms.
           </div>
         </motion.div>
       </div>
