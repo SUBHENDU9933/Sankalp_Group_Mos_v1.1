@@ -25,23 +25,22 @@ Build a self-owned, premium digital marketing operating system (hybrid Buffer.co
 - Multi-platform: Facebook, Instagram, Threads, X, Google Business, YouTube + GSC + GA.
 - Multi-language: English, Bengali, Hindi.
 
-## What's been implemented (updated 2026-05-14)
-- ✅ Premium split-screen Login (email/password + Google OAuth) — Supabase-backed
-- ✅ Sidebar with grouped nav, brand mark, badges (scheduled/pending), Cmd+K AI button
-- ✅ Topbar with global search, notifications, Compose button, **🌗 dark/light theme toggle (persists in localStorage)**
-- ✅ Dashboard: 4 KPI cards, 7-day reach AreaChart (Recharts), upcoming-posts rail, recent-reviews card, quick-actions grid
-- ✅ Content Studio Composer: post-type selector, multi-platform multi-select, EN/BN/HI editors, AI caption + hashtag generators per language, live platform-morphing preview, **direct media upload to Supabase Storage (images + videos)**
-- ✅ Content Calendar (month grid with platform-colored post chips)
-- ✅ Blogs Manager (list, AI blog generation, edit, publish, delete)
-- ✅ Reviews (sentiment-filtered, AI reply suggestion + post reply)
-- ✅ Campaigns (create festive/promotional/offer/lead-gen)
-- ✅ Analytics (stacked bar chart by platform)
-- ✅ Integrations (8 brand-color platform cards, real Google OAuth with platform-specific scopes for Business/YouTube/GSC/GA, mocked Facebook/Instagram)
+## What's been implemented (updated 2026-05-15 — v1.1.0 release)
+- ✅ Premium split-screen Login (email/password + Google OAuth) — Supabase-backed (signup hidden, TOS removed)
+- ✅ Sidebar with grouped nav, brand mark, badges, Cmd+K AI button — slide-in drawer on mobile
+- ✅ Topbar with hamburger on mobile, search on desktop, **🌗 dark/light theme toggle**
+- ✅ **Mobile-app UX**: BottomNav with FAB compose + slide-up "More" sheet, agenda calendar, full-screen Composer with Edit/Preview tabs, safe-area-aware
+- ✅ PWA-ready — Add to Home Screen launches full-screen with brand icon
+- ✅ Dashboard: KPIs, AreaChart, upcoming rail (click → edit), recent reviews, quick actions, **Onboarding Checklist**
+- ✅ **Posts Queue** (Buffer-style) with filter tabs, search, row actions (edit/duplicate/delete/publish-now)
+- ✅ Content Studio Composer: post-type, multi-platform, EN/BN/HI editors, AI caption + hashtag, live preview, **media upload + library picker**, edit mode
+- ✅ Content Calendar — desktop 7-col grid + mobile agenda view; click-to-edit + compose-for-a-date
+- ✅ Blogs Manager (CRUD + AI generation), Reviews (AI replies), Campaigns, Analytics, Integrations, **Notifications activity feed**, Settings
 - ✅ Global Cmd/Ctrl+K AI Command Assistant
-- ✅ **Vercel serverless functions** for production: `/api/ai/generate` (Anthropic / OpenAI direct), `/api/publish` (real Graph API for FB+IG, GBP for Google), `/api/auth/google` (dynamic host + per-platform scopes), `/api/auth/facebook` (mock), `/api/auth/disconnect`, full CRUD on posts/blogs/reviews/campaigns/integrations/media/analytics/dashboard
+- ✅ **Vercel serverless** (6 functions, under Hobby's 12 limit): consolidated `/api/[resource].js`, AI generate, publish, Google OAuth (multi-scope), Facebook mock, disconnect, cron
 - ✅ Backend FastAPI shim at `/app/backend` for the Emergent preview environment
-- ✅ Real publishing engine — calls FB Graph API when real token present, falls back to "mock" status when not
-- ✅ Supabase schema migration SQL + DEPLOYMENT.md guide
+- ✅ Real publishing engine — FB Graph API + IG media-publish + GBP localPosts when real tokens present
+- ✅ Supabase schema + DEPLOYMENT.md + CHANGELOG.md + README.md + .env.example
 - ✅ Tested: 100% backend (17/17), ~95% frontend (testing agent iteration 1)
 
 ## Prioritized backlog
