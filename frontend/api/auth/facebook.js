@@ -49,8 +49,8 @@ export default async function handler(req, res) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const redirectUri = `${proto}://${host}/api/auth/facebook`;
 
-  const appId = process.env.FACEBOOK_APP_ID;
-  const appSecret = process.env.FACEBOOK_APP_SECRET;
+  const appId = process.env.META_APP_ID || process.env.FACEBOOK_APP_ID;
+  const appSecret = process.env.META_APP_SECRET || process.env.FACEBOOK_APP_SECRET;
 
   // -----------------------------------------------------------------------
   // Initiate OAuth — redirect to Meta authorize
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
   // -----------------------------------------------------------------------
   if (req.method === 'GET' && req.query.code) {
     try {
-      if (!appId || !appSecret) throw new Error('FACEBOOK_APP_ID / FACEBOOK_APP_SECRET not set');
+      if (!appId || !appSecret) throw new Error('META_APP_ID / META_APP_SECRET not set');
 
       // 1. Exchange code for short-lived user token
       const tokRes = await fetch('https://graph.facebook.com/v19.0/oauth/access_token?' + new URLSearchParams({

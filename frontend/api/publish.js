@@ -334,6 +334,63 @@ export default async function handler(req, res) {
     x: publishX,
     twitter: publishX,
     threads: publishThreads,
+    whatsapp: publishWhatsApp,
+  };
+
+  // Publish in parallel (each platform is independent)
+  await Promise.all(platforms.map(async (platform) => {
+    const intg = byPlatform[platform];
+    const fn = dispatcher[platform];
+    if (!fn) { results[platform] = { ok: false, error: `Unsupported platform: ${platform}` }; return; }
+    // WhatsApp doesn't require an integration row (uses env-var token)
+    if (platform !== 'whatsapp') {
+      if (!intg) { results[platform] = { ok: false, error: 'integration row missing' }; return; }
+      if (!intg.is_connected) { results[platform] = { ok: false, error: 'not connected' }; return; }
+    }
+    try {
+      results[platform] = await fn(intg, post, media);
+    } catch (e) {
+      results[platform] = { ok: false, error: String(e.message || e) };
+    }
+  }));
+
+  // Determine overall status
+  const allOk = platforms.length > 0 && platforms.every(p => results[p]?.ok);
+  const anyOk = Object.values(results).some(r => r?.ok);
+  const allMock = Object.values(results).length > 0 && Object.values(results).every(r => r?.mode === 'mock');
+
+  let status;
+  if (allOk && !allMock) status = 'published';
+  else if (anyOk && !allMock) status = 'partial';
+  else if (allMock) status = 'pending_connection';
+  else status = 'failed';
+
+  const update = {
+    status,
+    metadata: { ...(post.metadata || {}), publish_results: results, last_publish_attempt: new Date().toISOString() },
+  };
+  if (status === 'published' || status === 'partial') update.published_at = new Date().toISOString();
+
+  await supabase.from('posts').update(update).eq('id', id);
+
+  return res.status(200).json({ ok: anyOk, status, results });
+}
+lect('*');
+  const byPlatform = Object.fromEntries((integrations || []).map(i => [i.platform, i]));
+
+  const results = {};
+  const media = post.media_urls || [];
+  const platforms = post.platforms || [];
+
+  const dispatcher = {
+    facebook: publishFacebook,
+    instagram: publishInstagram,
+    google: publishGoogleBusiness,
+    gbp: publishGoogleBusiness,
+    youtube: publishYouTube,
+    x: publishX,
+    twitter: publishX,
+    threads: publishThreads,
   };
 
   // Publish in parallel (each platform is independent)

@@ -28,6 +28,16 @@ Build a self-owned, premium digital marketing operating system (hybrid Buffer.co
 
 ## What's been implemented
 
+### v1.3.0 — Meta Webhooks + WhatsApp Cloud API (2026-02-15)
+- ✅ **`/api/webhooks/meta.js`** — single endpoint handles webhook verification (GET) AND event ingest (POST) for Facebook Page, Instagram, and WhatsApp Cloud API.
+- ✅ **HMAC-SHA256 signature verification** via `X-Hub-Signature-256` header against `META_APP_SECRET` — unsigned/forged events are dropped silently (never written to DB).
+- ✅ **Raw-body reader** with `bodyParser: false` config so signature math works on the exact bytes Meta sent.
+- ✅ **Event flattening** — Messenger messages, IG DMs, IG comments/mentions, WhatsApp inbound messages, and WhatsApp delivery statuses all normalised into one `messages` table row shape.
+- ✅ **`/app/supabase_migration_v1_3.sql`** — creates `messages` table with indexes (channel, received_at, sender) + a unique `(channel, external_id)` to dedupe Meta retries.
+- ✅ **WhatsApp send** — added as a `whatsapp` platform inside `/api/publish.js`. Supports both free-form text (within 24h window) and pre-approved templates. Recipients passed via `post.metadata.whatsapp.recipients`.
+- ✅ **Env-var compatibility** — `auth/facebook.js` now reads `META_APP_ID` / `META_APP_SECRET` (preferred) with fallback to legacy `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET`.
+- ✅ **`/app/META_WEBHOOK_SETUP.md`** — end-to-end setup guide (env vars, curl verify test, webhook subscription steps, live test recipes for FB Messenger / IG DM / WhatsApp inbound + outbound).
+
 ### v1.2.0 — Production Publishing Engine (2026-02-15)
 - ✅ **Real multi-platform publishing engine** at `/api/publish` covering:
   - **Facebook Pages** — text, photo, video posts via Graph API v19.
@@ -55,13 +65,14 @@ Build a self-owned, premium digital marketing operating system (hybrid Buffer.co
 - Vercel serverless setup with consolidated `[resource].js` for CRUD
 - Supabase schema + Storage RLS policies
 
-## Vercel function inventory (9 of 12 used)
+## Vercel function inventory (10 of 12 used)
 | Function | Purpose |
 |---|---|
 | `/api/[resource].js` | All CRUD + `/api/dashboard` |
-| `/api/publish.js` | Multi-platform publish engine |
+| `/api/publish.js` | Multi-platform publish engine (FB, IG, GBP, YT, X, Threads, WhatsApp) |
 | `/api/ai/generate.js` | Claude/GPT AI generation |
 | `/api/cron/publish.js` | Scheduled-post worker (secret-gated) |
+| `/api/webhooks/meta.js` | Meta webhook receiver (FB Page + IG + WhatsApp) |
 | `/api/auth/google.js` | Google OAuth (GBP/YT/GSC/GA scopes) |
 | `/api/auth/facebook.js` | Meta OAuth (FB Page + IG Business) |
 | `/api/auth/threads.js` | Threads OAuth |
