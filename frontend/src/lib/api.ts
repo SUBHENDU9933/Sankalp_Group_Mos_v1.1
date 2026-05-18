@@ -12,13 +12,22 @@ async function request<T = any>(path: string, init: RequestInit = {}): Promise<T
     },
   });
   if (!res.ok) {
-    let detail: any = undefined;
-    try { detail = await res.json(); } catch { detail = await res.text(); }
-    const msg = typeof detail === 'string' ? detail : (detail?.detail || JSON.stringify(detail));
+    // Read the body ONCE as text, then try to parse as JSON.
+    // (We cannot call .json() then .text() — the body stream can only be read once.)
+    const raw = await res.text().catch(() => '');
+    let detail: any = raw;
+    try { detail = raw ? JSON.parse(raw) : ''; } catch { /* keep raw text */ }
+    const msg = typeof detail === 'string'
+      ? (detail || res.statusText)
+      : (detail?.detail || detail?.error || detail?.message || JSON.stringify(detail));
     throw new Error(`${res.status} ${msg}`);
   }
   if (res.status === 204) return undefined as any;
-  return res.json();
+  // Same single-read principle for the success path — avoids the bug if the
+  // server (rare) returns a 2xx with an empty body.
+  const text = await res.text();
+  if (!text) return undefined as any;
+  try { return JSON.parse(text) as T; } catch { return text as unknown as T; }
 }
 
 export const api = {
