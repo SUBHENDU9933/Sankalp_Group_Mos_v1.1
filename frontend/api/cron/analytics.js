@@ -99,5 +99,30 @@ export default async function handler(req, res) {
     if (insErr) return res.status(500).json({ ok: false, error: insErr.message, results });
   }
 
+  // Debug-only: also sanity-check Google Business Profile / Search Console / Analytics
+  // connections (these aren't part of the daily metrics pull yet, but ?debug=1 should
+  // report on every connected platform, not just the four with a PULLERS entry).
+  if (debug) {
+    const byPlatform = Object.fromEntries((integrations || []).map(i => [i.platform, i]));
+    if (byPlatform.google?.access_token) {
+      const r = await fetch('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
+        headers: { Authorization: `Bearer ${byPlatform.google.access_token}` },
+      });
+      results.google_raw = await r.json();
+    }
+    if (byPlatform.gsc?.access_token) {
+      const r = await fetch('https://www.googleapis.com/webmasters/v3/sites', {
+        headers: { Authorization: `Bearer ${byPlatform.gsc.access_token}` },
+      });
+      results.gsc_raw = await r.json();
+    }
+    if (byPlatform.ga?.access_token) {
+      const r = await fetch('https://analyticsadmin.googleapis.com/v1beta/accountSummaries', {
+        headers: { Authorization: `Bearer ${byPlatform.ga.access_token}` },
+      });
+      results.ga_raw = await r.json();
+    }
+  }
+
   return res.status(200).json({ ok: true, date: today, inserted: rows.length, results });
 }
