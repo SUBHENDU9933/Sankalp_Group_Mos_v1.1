@@ -30,51 +30,62 @@ async function request<T = any>(path: string, init: RequestInit = {}): Promise<T
   try { return JSON.parse(text) as T; } catch { return text as unknown as T; }
 }
 
+// All CRUD resources (posts/blogs/reviews/campaigns/integrations/media/analytics/
+// messages/dashboard) are served by ONE consolidated function, api/data.js, kept
+// to a single file so we stay under Vercel's Hobby-plan serverless function count
+// limit. Vercel's dynamic bracket-file routing ([resource].js -> /api/:resource)
+// was not resolving in this project, so we call it explicitly via ?resource=
+// instead of relying on that path-based dynamic routing.
+function dataPath(resource: string, query: Record<string, string | number | undefined> = {}) {
+  const params = new URLSearchParams({ resource, ...Object.fromEntries(Object.entries(query).filter(([, v]) => v !== undefined) as any) });
+  return `/api/data?${params.toString()}`;
+}
+
 export const api = {
   health: () => request('/api/health'),
-  dashboard: () => request('/api/dashboard'),
+  dashboard: () => request(dataPath('dashboard')),
 
   posts: {
-    list: (status?: string) => request(`/api/posts${status ? `?status=${status}` : ''}`),
-    create: (data: any) => request('/api/posts', { method: 'POST', body: JSON.stringify(data) }),
-    update: (data: any) => request('/api/posts', { method: 'PUT', body: JSON.stringify(data) }),
-    remove: (id: number) => request('/api/posts', { method: 'DELETE', body: JSON.stringify({ id }) }),
+    list: (status?: string) => request(dataPath('posts', { status })),
+    create: (data: any) => request(dataPath('posts'), { method: 'POST', body: JSON.stringify(data) }),
+    update: (data: any) => request(dataPath('posts'), { method: 'PUT', body: JSON.stringify(data) }),
+    remove: (id: number) => request(dataPath('posts'), { method: 'DELETE', body: JSON.stringify({ id }) }),
     publish: (id: number | string) => request('/api/publish', { method: 'POST', body: JSON.stringify({ id }) }),
   },
   blogs: {
-    list: (status?: string) => request(`/api/blogs${status ? `?status=${status}` : ''}`),
-    create: (data: any) => request('/api/blogs', { method: 'POST', body: JSON.stringify(data) }),
-    update: (data: any) => request('/api/blogs', { method: 'PUT', body: JSON.stringify(data) }),
-    remove: (id: number) => request('/api/blogs', { method: 'DELETE', body: JSON.stringify({ id }) }),
+    list: (status?: string) => request(dataPath('blogs', { status })),
+    create: (data: any) => request(dataPath('blogs'), { method: 'POST', body: JSON.stringify(data) }),
+    update: (data: any) => request(dataPath('blogs'), { method: 'PUT', body: JSON.stringify(data) }),
+    remove: (id: number) => request(dataPath('blogs'), { method: 'DELETE', body: JSON.stringify({ id }) }),
   },
   reviews: {
-    list: () => request('/api/reviews'),
-    update: (data: any) => request('/api/reviews', { method: 'PUT', body: JSON.stringify(data) }),
+    list: () => request(dataPath('reviews')),
+    update: (data: any) => request(dataPath('reviews'), { method: 'PUT', body: JSON.stringify(data) }),
   },
   campaigns: {
-    list: () => request('/api/campaigns'),
-    create: (data: any) => request('/api/campaigns', { method: 'POST', body: JSON.stringify(data) }),
-    update: (data: any) => request('/api/campaigns', { method: 'PUT', body: JSON.stringify(data) }),
-    remove: (id: number) => request('/api/campaigns', { method: 'DELETE', body: JSON.stringify({ id }) }),
+    list: () => request(dataPath('campaigns')),
+    create: (data: any) => request(dataPath('campaigns'), { method: 'POST', body: JSON.stringify(data) }),
+    update: (data: any) => request(dataPath('campaigns'), { method: 'PUT', body: JSON.stringify(data) }),
+    remove: (id: number) => request(dataPath('campaigns'), { method: 'DELETE', body: JSON.stringify({ id }) }),
   },
   integrations: {
-    list: () => request('/api/integrations'),
+    list: () => request(dataPath('integrations')),
     disconnect: (platform: string) => request('/api/auth/disconnect', { method: 'POST', body: JSON.stringify({ platform }) }),
   },
   messages: {
-    list: (channel?: string) => request(`/api/messages${channel ? `?channel=${channel}` : ''}`),
-    update: (data: any) => request('/api/messages', { method: 'PUT', body: JSON.stringify(data) }),
+    list: (channel?: string) => request(dataPath('messages', { channel })),
+    update: (data: any) => request(dataPath('messages'), { method: 'PUT', body: JSON.stringify(data) }),
   },
   media: {
-    list: () => request('/api/media_library'),
+    list: () => request(dataPath('media_library')),
   },
   media_library: {
-    list: () => request('/api/media_library'),
-    create: (data: any) => request('/api/media_library', { method: 'POST', body: JSON.stringify(data) }),
-    remove: (id: number) => request('/api/media_library', { method: 'DELETE', body: JSON.stringify({ id }) }),
+    list: () => request(dataPath('media_library')),
+    create: (data: any) => request(dataPath('media_library'), { method: 'POST', body: JSON.stringify(data) }),
+    remove: (id: number) => request(dataPath('media_library'), { method: 'DELETE', body: JSON.stringify({ id }) }),
   },
   analytics: {
-    list: (days = 30, metric_type?: string) => request(`/api/analytics?days=${days}${metric_type ? `&metric_type=${metric_type}` : ''}`),
+    list: (days = 30, metric_type?: string) => request(dataPath('analytics', { days, metric_type })),
   },
   ai: {
     generate: (payload: { task: string; prompt: string; platform?: string; tone?: string; language?: string; context?: any }) =>
