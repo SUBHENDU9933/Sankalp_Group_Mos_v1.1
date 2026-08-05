@@ -12,6 +12,7 @@ const TABLES = {
   media: { table: 'media_library', order: 'created_at.desc', filters: ['folder'] },
   media_library: { table: 'media_library', order: 'created_at.desc', filters: ['folder'] },
   analytics: { table: 'analytics', order: 'date.asc', filters: ['metric_type', 'platform'] },
+  messages: { table: 'messages', order: 'received_at.desc', filters: ['channel', 'event_type'] },
 };
 
 function safe(err) {

@@ -61,6 +61,10 @@ export const api = {
     list: () => request('/api/integrations'),
     disconnect: (platform: string) => request('/api/auth/disconnect', { method: 'POST', body: JSON.stringify({ platform }) }),
   },
+  messages: {
+    list: (channel?: string) => request(`/api/messages${channel ? `?channel=${channel}` : ''}`),
+    update: (data: any) => request('/api/messages', { method: 'PUT', body: JSON.stringify(data) }),
+  },
   media: {
     list: () => request('/api/media_library'),
   },

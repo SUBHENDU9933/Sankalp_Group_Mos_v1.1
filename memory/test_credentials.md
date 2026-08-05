@@ -1,43 +1,22 @@
-# Sankalp Marketing Hub — Test Credentials
+# Sankalp Marketing Hub — Local Dev Setup Notes
+
+⚠️ This file previously contained real admin credentials in plaintext, in a **public** repo.
+That password should be considered compromised — rotate it in Supabase Auth immediately if it
+hasn't been already, and never commit real credentials here again.
 
 ## Admin Login (Supabase Auth)
-- **Email**:    `admin@sankalp.local`
-- **Password**: `Sankalp@2026`
-- **Role**:     Super Admin
-- **Sign-in**:  Email/password form OR Google OAuth
+Create your own admin user via Supabase Dashboard → Authentication → Users → Add user,
+or store credentials in a local, git-ignored `.env` file — never in a tracked markdown file.
 
 ## Supabase Project
 - **URL**: `https://vrsossdmdmbmnhmufuts.supabase.co`
-- **Anon key**: see `/app/frontend/.env`
-- **Service-role key**: see `/app/backend/.env`
+- **Anon key / Service-role key**: keep these in Vercel → Settings → Environment Variables
+  and in a local, git-ignored `.env` file only. Never commit them.
 
 ## First-time DB setup
 1. Open Supabase Dashboard → SQL Editor.
-2. Paste `/app/supabase_schema.sql` and run.
-3. After upgrading to v1.2, also run `/app/supabase_migration_v1_2.sql`.
+2. Paste `/supabase_schema.sql` and run.
+3. Run `supabase_migration_v1_2.sql`, `v1_3.sql`, `v1_4.sql` in order as needed.
 
-## Vercel — Env vars required for v1.2 publishing
-See `/app/frontend/.env.example` for the full list. **Critical for real publishing:**
-
-| Provider | Setup guide |
-|---|---|
-| Google (GBP, YouTube, GSC, GA) | already configured |
-| Meta (Facebook + Instagram) | `/app/META_SETUP_GUIDE.md` |
-| Threads | `/app/THREADS_SETUP_GUIDE.md` |
-| X (Twitter) | `/app/X_SETUP_GUIDE.md` |
-
-## Cron
-- `cron-job.org` → `POST https://YOUR-VERCEL-DOMAIN/api/cron/publish`
-- Add header **`X-Cron-Secret`** = value of `CRON_SECRET` on Vercel.
-
-## Endpoints
-- `GET  /api/dashboard` — KPIs
-- `GET|POST|PUT|DELETE /api/{posts|blogs|reviews|campaigns|integrations|media_library|analytics}`
-- `POST /api/publish` — body: `{ id: <postId> }` — fires real publishing flow
-- `POST /api/cron/publish` — header `X-Cron-Secret: <secret>`
-- `POST /api/ai/generate` — Claude/GPT generation
-- `GET  /api/auth/{google|facebook|threads|x}` — start OAuth
-- `POST /api/auth/disconnect` — body: `{ platform: 'facebook'|... }`
-
-## LLM
-- Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`) via `ANTHROPIC_API_KEY`. Fallback: GPT-4o via `OPENAI_API_KEY`.
+## Vercel — Env vars required for publishing
+See `DEPLOYMENT.md` for the full list.
