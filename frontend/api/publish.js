@@ -301,6 +301,48 @@ async function publishThreads(intg, post, media) {
 }
 
 // =========================================================================
+// WHATSAPP — CLOUD API TEXT/MEDIA MESSAGE (broadcast to a configured number)
+// Does not use the `integrations` table — reads WHATSAPP_TOKEN /
+// WHATSAPP_PHONE_NUMBER_ID / WHATSAPP_TO from Vercel env vars instead,
+// since WhatsApp Cloud API sends to a specific recipient, not a "feed".
+// =========================================================================
+async function publishWhatsApp(intg, post, media) {
+  const token = process.env.WHATSAPP_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const to = process.env.WHATSAPP_TO; // recipient number(s), comma-separated
+  if (!token || !phoneNumberId || !to) {
+    return { ok: false, error: 'WHATSAPP_TOKEN / WHATSAPP_PHONE_NUMBER_ID / WHATSAPP_TO not set on Vercel' };
+  }
+
+  const content = post.content_en || post.content || '';
+  const recipients = to.split(',').map(s => s.trim()).filter(Boolean);
+  const mediaType = classifyMedia(media[0]);
+
+  const results = await Promise.all(recipients.map(async (recipient) => {
+    let body;
+    if (media[0] && mediaType === 'image') {
+      body = { messaging_product: 'whatsapp', to: recipient, type: 'image', image: { link: media[0], caption: content } };
+    } else if (media[0] && mediaType === 'video') {
+      body = { messaging_product: 'whatsapp', to: recipient, type: 'video', video: { link: media[0], caption: content } };
+    } else {
+      body = { messaging_product: 'whatsapp', to: recipient, type: 'text', text: { body: content } };
+    }
+    const r = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    return r.ok ? { to: recipient, ok: true, id: d.messages?.[0]?.id } : { to: recipient, ok: false, error: fmtErr(d) };
+  }));
+
+  const anyOk = results.some(r => r.ok);
+  return anyOk
+    ? { ok: true, results }
+    : { ok: false, error: results[0]?.error || 'all recipients failed', results };
+}
+
+// =========================================================================
 // MAIN HANDLER
 // =========================================================================
 export default async function handler(req, res) {
@@ -347,61 +389,6 @@ export default async function handler(req, res) {
       if (!intg) { results[platform] = { ok: false, error: 'integration row missing' }; return; }
       if (!intg.is_connected) { results[platform] = { ok: false, error: 'not connected' }; return; }
     }
-    try {
-      results[platform] = await fn(intg, post, media);
-    } catch (e) {
-      results[platform] = { ok: false, error: String(e.message || e) };
-    }
-  }));
-
-  // Determine overall status
-  const allOk = platforms.length > 0 && platforms.every(p => results[p]?.ok);
-  const anyOk = Object.values(results).some(r => r?.ok);
-  const allMock = Object.values(results).length > 0 && Object.values(results).every(r => r?.mode === 'mock');
-
-  let status;
-  if (allOk && !allMock) status = 'published';
-  else if (anyOk && !allMock) status = 'partial';
-  else if (allMock) status = 'pending_connection';
-  else status = 'failed';
-
-  const update = {
-    status,
-    metadata: { ...(post.metadata || {}), publish_results: results, last_publish_attempt: new Date().toISOString() },
-  };
-  if (status === 'published' || status === 'partial') update.published_at = new Date().toISOString();
-
-  await supabase.from('posts').update(update).eq('id', id);
-
-  return res.status(200).json({ ok: anyOk, status, results });
-}
-lect('*');
-  const byPlatform = Object.fromEntries((integrations || []).map(i => [i.platform, i]));
-
-  const results = {};
-  const media = post.media_urls || [];
-  const platforms = post.platforms || [];
-
-  const dispatcher = {
-    facebook: publishFacebook,
-    instagram: publishInstagram,
-    google: publishGoogleBusiness,
-    gbp: publishGoogleBusiness,
-    youtube: publishYouTube,
-    x: publishX,
-    twitter: publishX,
-    threads: publishThreads,
-  };
-
-  // Publish in parallel (each platform is independent)
-  await Promise.all(platforms.map(async (platform) => {
-    const intg = byPlatform[platform];
-    if (!intg) { results[platform] = { ok: false, error: 'integration row missing' }; return; }
-    if (!intg.is_connected) { results[platform] = { ok: false, error: 'not connected' }; return; }
-
-    const fn = dispatcher[platform];
-    if (!fn) { results[platform] = { ok: false, error: `Unsupported platform: ${platform}` }; return; }
-
     try {
       results[platform] = await fn(intg, post, media);
     } catch (e) {

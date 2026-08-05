@@ -8,8 +8,8 @@
 
 ### 2. Supabase — enable Google provider (needed for the "Continue with Google" login button)
 - Auth → Providers → Google → **Enable**
-- Client ID:     `720464370883-ipo3gorjlqsd10016lhhls77jm3e7lhm.apps.googleusercontent.com`
-- Client Secret: `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`
+- Client ID / Secret: get these from Google Cloud Console → APIs & Services → Credentials.
+  ⚠️ Never paste real values into this file — it is committed to a public repo.
 - Auth → URL Configuration:
   - Site URL: `https://mos.sankalpinterior.com`
   - Additional Redirect URLs:
@@ -43,15 +43,19 @@ Settings → Environment Variables → add ALL of these (Production + Preview + 
 | Key | Value |
 |-----|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://vrsossdmdmbmnhmufuts.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_YpvC7lCubb_4ikElBGsdaw_8BHCTnM9` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Dashboard → Settings → API → "anon / publishable" key |
 | `VITE_SUPABASE_URL` | `https://vrsossdmdmbmnhmufuts.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | `sb_publishable_YpvC7lCubb_4ikElBGsdaw_8BHCTnM9` |
-| `SUPABASE_SERVICE_ROLE_KEY` | `sb_secret_wp-knG-aerHbwgBlmkR2LQ_vFwYvJOH` |
-| `GOOGLE_CLIENT_ID` | `720464370883-ipo3gorjlqsd10016lhhls77jm3e7lhm.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | `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` |
+| `VITE_SUPABASE_ANON_KEY` | same anon/publishable key as above |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard → Settings → API → "service_role" key — **never commit this anywhere, it bypasses RLS entirely** |
+| `GOOGLE_CLIENT_ID` | from Google Cloud Console (see step 4) |
+| `GOOGLE_CLIENT_SECRET` | from Google Cloud Console — **never commit this** |
 | `ANTHROPIC_API_KEY` | **YOUR Anthropic key** — get one at https://console.anthropic.com → API Keys → Create Key (Claude Sonnet 4.5) |
 | `OPENAI_API_KEY` *(optional fallback)* | Your OpenAI key if you don't want to use Anthropic |
 | `VITE_BACKEND_URL` | *(leave empty)* — frontend then uses relative /api/* on same domain |
+| `WHATSAPP_TOKEN` *(optional)* | WhatsApp Cloud API permanent access token, for outbound WhatsApp posting |
+| `WHATSAPP_PHONE_NUMBER_ID` *(optional)* | WhatsApp Cloud API phone_number_id |
+| `WHATSAPP_TO` *(optional)* | Comma-separated recipient number(s) in E.164 format |
+| `CRON_SECRET` *(optional but recommended)* | Any random string — protects `/api/cron/publish` and `/api/cron/analytics` from public callers |
 
 After saving env vars, click **Redeploy** so the new envs are picked up.
 

@@ -28,7 +28,7 @@ A premium internal alternative to Buffer / Hootsuite / Meta Business Suite, with
 | Inbox + DM automation | ⏳ V1.2 |
 | Mobile-app UI (BottomNav, drawer, agenda) | ✅ |
 | Dark / Light theme | ✅ |
-| Vercel Cron (scheduled publishing) | ✅ Hourly |
+| Vercel Cron (scheduled publishing + analytics) | ✅ Once daily (Vercel Hobby-plan cron limit — upgrade to Pro for more frequent runs) |
 
 ## 📦 Project structure
 
@@ -67,9 +67,8 @@ See **[`DEPLOYMENT.md`](./DEPLOYMENT.md)** for the full step-by-step guide. Quic
 
 ## 🔑 Default credentials (development)
 
-- Email: `admin@sankalp.local`
-- Password: `Sankalp@2026`
-- (Or sign in with Google after the Supabase Google provider is enabled)
+- Create your own admin user in Supabase Auth (Dashboard → Authentication → Users → Add user), or sign in with Google after the Supabase Google provider is enabled.
+- ⚠️ Do not commit real credentials to this file or to `memory/test_credentials.md` — this repo is public.
 
 ## 📱 Mobile app
 

@@ -9,6 +9,7 @@ const SYS = {
   ad_copy: "Write conversion-focused ad copy for an interior design firm. Provide: a hook (max 6 words), 2 short sentences of body, and a strong CTA. Premium, no clichés. Return as markdown with **Hook:**, **Body:**, **CTA:** sections.",
   seo_blog: "Write a 600-800 word SEO blog for an interior-design firm. Include H2/H3 markdown headings, a short intro, 3-5 sections, and a closing CTA. Natural keyword usage. Return markdown only.",
   review_reply: "Draft a thoughtful, warm reply to a customer review for Sankalp Interior Solution. 2-3 sentences. Acknowledge specifics from the review, stay professional. No emojis. Return only the reply text.",
+  dm_reply: "Draft a short, warm reply to an inbound DM/comment/message for Sankalp Interior Solution, a premium interior-design firm. 1-3 sentences, helpful and professional, matching the tone of the incoming message. If the message asks a question you can't answer specifically (pricing, availability), offer to have the team follow up. Return only the reply text.",
   command: "You are Sankalp Marketing Hub's AI command assistant. Given the user's natural-language request, respond with a concise structured plan in markdown (use bullets / short sections) describing what content/campaign you'd create and the recommended platforms, timing, and tone.",
 };
 
